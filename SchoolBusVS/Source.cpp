@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "GraphBuilder.h"
+#include "Vehicle.h"
 
 #include <iostream>
 
@@ -13,6 +14,9 @@ int main() {
 	builder.setEdgeFile("testedges.txt");
 	
 	Graph graph = builder.build();
+	vector<Vehicle> vehicles;
+	vector<Child> kids;
+	Vertex* garage = graph.getVertexSet()[0];
 	
 	graph.dijkstraShortestPath(0);
 
