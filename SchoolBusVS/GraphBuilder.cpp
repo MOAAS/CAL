@@ -57,6 +57,15 @@ Graph GraphBuilder::build() {
 		EdgeInfo e(line);
 		Vertex* src = graph.findVertex(e.srcID);
 		Vertex* dest = graph.findVertex(e.destID);
+		if (src == NULL) {
+			cout << "Error: Couldn't find vertex with srcID = " << e.srcID << endl;
+			throw exception();
+		}
+		if (dest == NULL) {
+			cout << "Error: Couldn't find vertex with destID = " << e.destID << endl;
+			throw exception();
+		}
+
 		double dist = sqrt(pow(src->getX() - dest->getX(), 2) + pow(src->getY() - dest->getY(), 2));
 		graph.addEdge(e.srcID, e.destID, dist);
 		//cout << fixed << setprecision(5) << "E: " << e.srcID << " " << e.destID << " " << dist << endl;
