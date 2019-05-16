@@ -16,8 +16,11 @@ struct POI {
 	};
 	POItype type;
 public:
-	//POI(Vertex v, POItype t) : vertex(v), type(t) { }
-	//POI(Child c, POItype t) : child(c), type(t) { }
+	~POI() {}
+	//POI() {}
+	POI(const POI& poi) {}
+	explicit POI(Vertex v, POItype t) : vertex(v), type(t) { }
+	explicit POI(Child c, POItype t) : child(c), type(t) { }
 	POItype getType() const { return type; }
 	Child getChild() const { return child; }
 	Vertex getVertex() const { return vertex; }
