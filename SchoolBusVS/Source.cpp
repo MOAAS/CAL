@@ -22,9 +22,11 @@ int main() {
 	cout << "HELLO WORLD" << endl;
 
 	GraphBuilder builder;
-	builder.setNodeFile("testnodes.txt");
-	builder.setEdgeFile("testedges.txt");
-	
+	builder.setNodeFile("../Graphs/testnodes.txt");
+	builder.setEdgeFile("../Graphs/testedges.txt");
+	//builder.setNodeFile("../Graphs/nodes.txt");
+	//builder.setEdgeFile("../Graphs/edges.txt");
+
 	Graph graph = builder.build();
 	vector<Vehicle> vehicles;
 	vector<Child> kids;
@@ -34,13 +36,13 @@ int main() {
 	for (Child child : kids)
 		poiList.addHome(child);
 		
-	graph.dijkstraShortestPath(0);
-	
-	displayPath(graph.getPath(graph.findVertex(2)));
+	//graph.dijkstraShortestPath(0);	
+	//displayPath(graph.getPath(graph.findVertex(2)));
 
 	cout << "------------" << endl;
 
 	vector<int> testIDs = { 0, 1, 2, 4 };
+	//vector<int> testIDs = {90379359, 1108123577 };
 
 	cout << "Available PoIs: ";
 	printVector::ofValues(cout, testIDs, " ") << endl;
