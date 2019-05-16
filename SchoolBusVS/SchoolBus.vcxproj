@@ -123,6 +123,7 @@
     <ClInclude Include="Graph.h" />
     <ClInclude Include="GraphBuilder.h" />
     <ClInclude Include="MutablePriorityQueue.h" />
+    <ClInclude Include="PathMatrix.h" />
     <ClInclude Include="PoIList.h" />
     <ClInclude Include="Vehicle.h" />
   </ItemGroup>
@@ -130,6 +131,7 @@
     <ClCompile Include="Child.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="GraphBuilder.cpp" />
+    <ClCompile Include="PathMatrix.cpp" />
     <ClCompile Include="PoIList.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Vehicle.cpp" />

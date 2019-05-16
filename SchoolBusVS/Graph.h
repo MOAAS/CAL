@@ -7,6 +7,7 @@
 #include <climits>
 #include <cmath>
 #include "MutablePriorityQueue.h"
+#include "PathMatrix.h"
 
 #define INF std::numeric_limits<double>::max()
 
@@ -15,6 +16,7 @@ using namespace std;
 class Edge;
 class Graph;
 class Vertex;
+class PathMatrix;
 
 /********************** Edge  ****************************/
 
@@ -70,8 +72,9 @@ public:
 	int getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
+	PathMatrix multipleDijkstra(const vector<int>& POIids);
 	void dijkstraShortestPath(int sourceID);
-	vector<int> getPath(int sourceID, int destID) const;
+	vector<Vertex*> getPath(Vertex* v) const;
 };
 
 

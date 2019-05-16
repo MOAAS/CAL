@@ -76,8 +76,21 @@ bool Graph::addEdge(int srcID, int destID, double w) {
 	return true;
 }
 
+/*** Shortest Path between POIs ***/
 
+PathMatrix Graph::multipleDijkstra(const vector<int>& POIids) {
+	PathMatrix matrix;
+	for (int srcID : POIids) {
+		dijkstraShortestPath(srcID);
+		for (int destID : POIids) {
+			Vertex* dest = findVertex(destID);
+			matrix.setPath(srcID, destID, dest->dist, this->getPath(dest));
+		}
+	}
+	return matrix;
+}
 /**************** Single Source Shortest Path algorithms ************/
+
 
 void Graph::dijkstraShortestPath(int sourceID) {
 	auto src = findVertex(sourceID);
@@ -107,13 +120,13 @@ void Graph::dijkstraShortestPath(int sourceID) {
 	}
 }
 
-vector<int> Graph::getPath(int sourceID, int destID) const {
-	vector<int> res;
-	Vertex* v = findVertex(destID);
+vector<Vertex *> Graph::getPath(Vertex* dest) const {
+	vector<Vertex *> res;
+	Vertex* v = dest;
 	if (v == NULL || v->dist == INF)
 		return res;
 	while (v != NULL) {
-		res.push_back(v->ID);
+		res.push_back(v);
 		v = v->path;
 	}
 	reverse(res.begin(), res.end());

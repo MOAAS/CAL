@@ -8,18 +8,22 @@ bool PoIList::existsSchool(Vertex school) {
 	return false;
 }
 
-PoIList::PoIList(Vertex * garage, const vector<Child>& kids) {
+PoIList::PoIList(Vertex * garage) : garage(*garage) {
 	pois.push_back(POI(*garage, POI::Garage));
-
-	for (Child child : kids) {
-		pois.push_back(POI(child, POI::Kid));
-		if (!existsSchool(child.getSchool()))
-			pois.push_back(POI(child.getSchool(), POI::School));
-	}
 }
 
 void PoIList::addHome(const Child & child) {
 	pois.push_back(POI(child, POI::Kid));
 	if (!existsSchool(child.getSchool()))
 		pois.push_back(POI(child.getSchool(), POI::School));
+}
+
+vector<int> PoIList::getIDs() const {
+	vector<int> list;
+
+	for (POI poi : pois) {
+		list.push_back(poi.getID());
+	}
+
+	return list;
 }

@@ -3,35 +3,42 @@
 #include "Graph.h"
 #include "Child.h"
 
-struct POI {
+class POI {
+public:
 	enum POItype {
 		Kid,
 		School,
 		Garage
 	};
 
+	~POI() {}
+	POI(const POI& poi) {}
+	POI(Vertex v, POItype t) : vertex(v), type(t) { }
+	POI(Child c, POItype t) : child(c), type(t) { }
+	POItype getType() const { return type; }
+	Child getChild() const { return child; }
+	Vertex getVertex() const { return vertex; }
+	int getID() const {
+		if (type == Kid)
+			return child.getHome().getID();
+		return vertex.getID();
+	}
+private:
 	union {
 		Vertex vertex;
 		Child child;
 	};
 	POItype type;
-public:
-	~POI() {}
-	//POI() {}
-	POI(const POI& poi) {}
-	explicit POI(Vertex v, POItype t) : vertex(v), type(t) { }
-	explicit POI(Child c, POItype t) : child(c), type(t) { }
-	POItype getType() const { return type; }
-	Child getChild() const { return child; }
-	Vertex getVertex() const { return vertex; }
 };
 
 class PoIList
 {
 	vector<POI> pois;
+	Vertex garage;
 	bool existsSchool(Vertex school);
 public:
-	PoIList(Vertex* garage, const vector<Child>& kids);
+	PoIList(Vertex* garage);
 	void addHome(const Child& child);
+	vector<int> getIDs() const;
 };
 

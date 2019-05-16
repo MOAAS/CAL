@@ -19,13 +19,15 @@ int main() {
 	vector<Child> kids;
 	Vertex* garage = graph.getVertexSet()[0];
 
-	PoIList poiList(garage, kids);
+	PoIList poiList(garage);
+	for (Child child : kids)
+		poiList.addHome(child);
 
 	
 	graph.dijkstraShortestPath(0);
 
-	vector<int> path = graph.getPath(0, 2);
+	vector<Vertex*> path = graph.getPath(graph.findVertex(2));
 
-	for (int i : path)
-		cout << i << " ";
+	for (Vertex* vertex : path)
+		cout << vertex->getID() << " ";
 }
