@@ -3,6 +3,8 @@
 #include "Vehicle.h"
 
 #include <iostream>
+#include "Source.h"
+#include "PoIList.h"
 
 using namespace std;
 
@@ -17,6 +19,9 @@ int main() {
 	vector<Vehicle> vehicles;
 	vector<Child> kids;
 	Vertex* garage = graph.getVertexSet()[0];
+
+	PoIList poiList(garage, kids);
+
 	
 	graph.dijkstraShortestPath(0);
 
