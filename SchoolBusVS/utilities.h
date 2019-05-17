@@ -4,6 +4,8 @@
 #define WIN32_LEAN_AND_MEAN 
 #endif
 
+#define _WINSOCKAPI_ // temporario
+
 #include <vector>
 #include <algorithm>
 #include <chrono>

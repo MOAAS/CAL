@@ -26,6 +26,7 @@ class Edge {
 	double weight;         // edge weight
 public:
 	Edge(Vertex *d, double w);
+	Vertex* getDest();
 	friend class Graph;
 	friend class Vertex;
 };
@@ -53,6 +54,7 @@ public:
 	double getX() const;
 	double getY() const;
 	double getDist() const;
+	vector<Edge> getAdj() const;
 	Vertex *getPath() const;
 	friend class Graph;
 	friend class MutablePriorityQueue<Vertex>;

@@ -112,16 +112,21 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Child.h" />
+    <ClInclude Include="connection.h" />
+    <ClInclude Include="edgetype.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="GraphBuilder.h" />
+    <ClInclude Include="graphviewer.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MutablePriorityQueue.h" />
     <ClInclude Include="PathMatrix.h" />
@@ -131,8 +136,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Child.cpp" />
+    <ClCompile Include="connection.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="GraphBuilder.cpp" />
+    <ClCompile Include="graphviewer.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PathMatrix.cpp" />
     <ClCompile Include="PoIList.cpp" />

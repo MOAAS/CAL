@@ -9,9 +9,9 @@ using namespace std;
 class Vehicle
 {
 	int capacity;
-	vector<Child> children;
-	vector<Vertex> path;
-	vector<Vertex> returnPath;
+	vector<Child*> children;
+	vector<Vertex*> path;
+	vector<Vertex*> returnPath;
 public:
 	Vehicle(int capacity);
 };

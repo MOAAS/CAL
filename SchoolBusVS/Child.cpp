@@ -1,5 +1,5 @@
 #include "Child.h"
 
-Child::Child(Vertex home, Vertex school) : home(home), school(school) {
+Child::Child(Vertex* home, Vertex* school) : home(home), school(school) {
 
 }

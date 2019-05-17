@@ -4,11 +4,11 @@
 
 class Child
 {
-	Vertex home;
-	Vertex school;
+	Vertex* home;
+	Vertex* school;
 public:
-	Child(Vertex home, Vertex school);
-	Vertex getHome() const { return home; }
-	Vertex getSchool() const { return school; }
+	Child(Vertex* home, Vertex* school);
+	Vertex* getHome() const { return home; }
+	Vertex* getSchool() const { return school; }
 };
 

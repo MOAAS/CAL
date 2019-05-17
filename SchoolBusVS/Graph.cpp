@@ -6,6 +6,10 @@ Edge::Edge(Vertex *d, double w) : dest(d), weight(w) {
 
 }
 
+Vertex * Edge::getDest() {
+	return dest;
+}
+
 // -- Vertex -- //
 
 void Vertex::addEdge(Vertex *d, double w) {
@@ -36,6 +40,10 @@ double Vertex::getY() const {
 
 double Vertex::getDist() const {
 	return this->dist;
+}
+
+vector<Edge> Vertex::getAdj() const {
+	return adj;
 }
 
 Vertex *Vertex::getPath() const {
