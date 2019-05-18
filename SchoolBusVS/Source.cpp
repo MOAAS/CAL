@@ -65,7 +65,7 @@ void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
 void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
 	for (POI poi : pois.getPoIs()) {
 		switch (poi.getType()) {
-			case POI::Garage: gv->setVertexColor(poi.getID(), LIGHT_GRAY); break;
+		    case POI::Garage: gv->setVertexColor(poi.getID(), LIGHT_GRAY); break;
 			case POI::School: gv->setVertexColor(poi.getID(), WHITE); break;
 			case POI::Kid: gv->setVertexColor(poi.getID(), ORANGE); break;
 		}
@@ -73,12 +73,14 @@ void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
 }
 
 void resetGraphColors(GraphViewer* gv, const vector<Vertex*>& vertexSet, const PoIList& pois) {
+	Menu::displayColored("Updating graph colors... ", MENU_YELLOW);
 	for (Vertex* v : vertexSet) {
 		gv->setVertexColor(v->getID(), BLUE);
 		for (Edge* e : v->getAdj())
 			gv->setEdgeColor(e->getID(), BLACK);
 	}
 	highlightPoIs(gv, pois);
+	Menu::displayColored("Done.", MENU_YELLOW) << endl;
 }
 
 
@@ -97,12 +99,11 @@ void shortestPathOption(GraphViewer* gv, Graph* graph, const PoIList& poiList, P
 		cout << "Distance: " << matrix->getDist(srcID, destID) << endl;
 
 		string input;
-		Menu::getLineInput_CI("Do you wish to return? (Y / N) ", input, { "Y","N" });
-		if (input != "Y")
+		Menu::getLineInput_CI("Do you wish to continue? (Y / N) ", input, { "Y","N" });
+		resetGraphColors(gv, graph->getVertexSet(), poiList);
+		if (input == "N")
 			break;
-		else cout << "Operation cancelled" << endl;
 	}
-	resetGraphColors(gv, graph->getVertexSet(), poiList);
 }
 
 void addVehicle(vector<Vehicle*>& vehicles) {
@@ -129,27 +130,60 @@ void addKid(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix)
 		cout << "Couldn't find home ID." << endl;
 	else if (school == NULL)
 		cout << "Couldn't find school ID." << endl;
-	else if (input == "Y") {
+	else if (input == "Y")
 		poiList.addHome(new Child(home, school));
-		highlightPoIs(gv, poiList);
-	}
-	else cout << "Operation cancelled" << endl;
+	else cout << "Succesfully cancelled operation" << endl;
 }
 
 void setGarage(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix) {
+	int ID; string input;
 	Menu::printHeader("Set Garage (Depot) vertex");
-	int ID;
-	string input;
 	Menu::getInput<int>("Depot ID: ", ID);
 	Menu::getLineInput_CI("Depot ID: " + to_string(ID) + ". Proceed? (Y / N) ", input, { "Y","N" });
 	Vertex* garage = graph->findVertex(ID);
 	if (garage == NULL)
 		cout << "Couldn't find garage ID." << endl;
-	else if (input == "Y") {
-		poiList.setGarage(garage);
-		resetGraphColors(gv, graph->getVertexSet(), poiList);
+	else if (input == "Y")
+		poiList.changeGarage(garage);
+	else cout << "Succesfully cancelled operation" << endl;
+}
+
+void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
+	Menu::printHeader("Connectivity check");
+	Menu::displayColored("Checking connectivity for the following PoIs: ", MENU_WHITE);
+	printVector::ofValues(cout, ids, " ") << endl;
+	int missingPaths = 0;
+	for (int i = 0; i < ids.size(); i++) {
+		for (int j = 0; j < ids.size(); j++) {
+			if (matrix->getDist(i, j) == 9) {
+				cout << "There is no path from " << ids[i] << " to " << ids[j] << endl;
+				missingPaths++;
+			}
+		}
 	}
-	else cout << "Operation cancelled" << endl;
+	if (missingPaths == 0)
+		Menu::displayColored("There are paths between every pair of PoIs", MENU_LIGHTGREEN) << endl;
+	else if (missingPaths == 1)
+		Menu::displayColored("There is a path missing between two PoIs", MENU_LIGHTRED) << endl;
+	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
+}
+
+void saveVehicles(const vector<Vehicle*>& vehicles) {
+	ofstream f("../Files/vehicless.txt");
+
+	for (Vehicle* vehicle : vehicles) {
+		f << vehicle->getCapacity() << " ";
+	}
+}
+
+vector<Vehicle*> loadVehicles() {
+	vector<Vehicle*> vehicles;
+	ifstream f("../Files/vehicles.txt");
+
+	int capacity;
+	while (f >> capacity)
+		vehicles.push_back(new Vehicle(capacity));
+	return vehicles;
 }
 
 int main() {
@@ -160,28 +194,13 @@ int main() {
 	builder.setEdgeFile("../Graphs/edges.txt");
 
 	Graph* graph = builder.build();
-	GraphViewer *gv = createGraphViewer(2000, 2000, graph);
-
-	vector<Vehicle*> vehicles = { new Vehicle(20), new Vehicle(30), new Vehicle(25) };
-	vector<Child*> kids;
-	kids.push_back(new Child(graph->findVertex(135816240), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(135816241), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(135816255), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(135814928), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(497311324), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(497301854), graph->findVertex(135824900)));
-	kids.push_back(new Child(graph->findVertex(497311023), graph->findVertex(135824900)));
-
-	kids.push_back(new Child(graph->findVertex(135814938), graph->findVertex(122528351)));
-	kids.push_back(new Child(graph->findVertex(133267072), graph->findVertex(122528351)));
-	kids.push_back(new Child(graph->findVertex(133267073), graph->findVertex(122528351)));
-	Vertex* garage = graph->findVertex(312402720);
-	
-	PoIList poiList(garage);
-    for (Child* child : kids)
-		poiList.addHome(child);
-		
+	PoIList poiList("../Files/pois.txt", graph);
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
+
+	GraphViewer *gv = createGraphViewer(2000, 2000, graph);
+	highlightPoIs(gv, poiList);
+	   
+	vector<Vehicle*> vehicles = loadVehicles();
 
 	while (true) {
 		int option;
@@ -190,13 +209,19 @@ int main() {
 		cout << " 2 - Add vehicle" << endl;
 		cout << " 3 - Add kid" << endl;
 		cout << " 4 - Set garage point" << endl;
-		Menu::getInput<int>("Option: ", option, 1, 4);
+		cout << " 5 - Verify connectivity " << endl;
+		cout << " 6 - Update Graph Viewer PoIs" << endl;
+		cout << " 7 - Save and quit" << endl;
+		Menu::getInput<int>("Option: ", option, 1, 8);
 
 		switch (option) {
 			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
 			case 2: addVehicle(vehicles); break;
 			case 3: addKid(gv, graph, poiList, matrix); break;
 			case 4: setGarage(gv, graph, poiList, matrix); break;
+			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
+			case 6: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
+			case 7: poiList.save("../Files/poiss.txt"); saveVehicles(vehicles); break;
 		}
 	}
 }

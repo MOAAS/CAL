@@ -6,22 +6,22 @@
 #include "utilities.h"
 using namespace std;
 
-constexpr unsigned int BLACK = 0;
-constexpr unsigned int BLUE = 1;
-constexpr unsigned int GREEN = 2;
-constexpr unsigned int CYAN = 3;
-constexpr unsigned int RED = 4;
-constexpr unsigned int MAGENTA = 5;
-constexpr unsigned int BROWN = 6;
-constexpr unsigned int LIGHTGRAY = 7;
-constexpr unsigned int DARKGRAY = 8;
-constexpr unsigned int LIGHTBLUE = 9;
-constexpr unsigned int LIGHTGREEN = 10;
-constexpr unsigned int LIGHTCYAN = 11;
-constexpr unsigned int LIGHTRED = 12;
-constexpr unsigned int LIGHTMAGENTA = 13;
-constexpr unsigned int YELLOW = 14;
-constexpr unsigned int WHITE = 15;
+constexpr unsigned int MENU_BLACK = 0;
+constexpr unsigned int MENU_BLUE = 1;
+constexpr unsigned int MENU_GREEN = 2;
+constexpr unsigned int MENU_CYAN = 3;
+constexpr unsigned int MENU_RED = 4;
+constexpr unsigned int MENU_MAGENTA = 5;
+constexpr unsigned int MENU_BROWN = 6;
+constexpr unsigned int MENU_LIGHTGRAY = 7;
+constexpr unsigned int MENU_DARKGRAY = 8;
+constexpr unsigned int MENU_LIGHTBLUE = 9;
+constexpr unsigned int MENU_LIGHTGREEN = 10;
+constexpr unsigned int MENU_LIGHTCYAN = 11;
+constexpr unsigned int MENU_LIGHTRED = 12;
+constexpr unsigned int MENU_LIGHTMAGENTA = 13;
+constexpr unsigned int MENU_YELLOW = 14;
+constexpr unsigned int MENU_WHITE = 15;
 
 /**
  * @brief Class used to facilitate the creation of a console interface, using the cout and cin streams from the STL. Only has static methods and variables.

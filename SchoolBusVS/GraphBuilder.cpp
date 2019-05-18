@@ -52,7 +52,7 @@ Graph* GraphBuilder::build() {
 		graph->addVertex(v.ID, v.x, v.y);
 	}
 
-	int id = 0;
+	int edgeId = 0;
 	while (getline(edgeFile, line)) {
 		EdgeInfo e(line);
 		Vertex* src = graph->findVertex(e.srcID);
@@ -67,8 +67,8 @@ Graph* GraphBuilder::build() {
 		}
 
 		double dist = sqrt(pow(src->getX() - dest->getX(), 2) + pow(src->getY() - dest->getY(), 2));
-		graph->addEdge(id++, e.srcID, e.destID, dist);
-		graph->addEdge(id++, e.destID, e.srcID, dist); // undirected ( test ) :D
+		graph->addEdge(edgeId++, e.srcID, e.destID, dist);
+		graph->addEdge(edgeId++, e.destID, e.srcID, dist); // undirected ( test ) :D
 	}
 
 	return graph;

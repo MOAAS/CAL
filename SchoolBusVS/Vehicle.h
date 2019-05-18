@@ -14,5 +14,9 @@ class Vehicle
 	vector<Vertex*> returnPath;
 public:
 	Vehicle(int capacity);
+	int getCapacity() const;
+	vector<Child*> getChildren() const;
+	vector<Vertex*> getPath() const;
+	vector<Vertex*> getReturnPath() const;
 };
 

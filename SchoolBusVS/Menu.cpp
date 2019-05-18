@@ -1,7 +1,7 @@
 #include "Menu.h"
 
-unsigned int Menu::DefaultColor = LIGHTGRAY;
-unsigned int Menu::CurrentColor = LIGHTGRAY;
+unsigned int Menu::DefaultColor = MENU_LIGHTGRAY;
+unsigned int Menu::CurrentColor = MENU_LIGHTGRAY;
 
 void Menu::setDefaultColor(unsigned int color) {
 	Menu::DefaultColor = color;
@@ -10,7 +10,7 @@ void Menu::setDefaultColor(unsigned int color) {
 ostream & Menu::printHeader(const string& title) {
 	ostringstream oss;
 	oss << "---- " << title << " -----" << endl;
-	displayColored(oss.str(), LIGHTRED);
+	displayColored(oss.str(), MENU_LIGHTRED);
 	return cout;
 }
 
@@ -21,7 +21,7 @@ ostream & Menu::printTitle(const string& title, char fill) {
 	oss << fill << fill << "  " << title << "  " << fill << fill << endl;
 	oss << setw(length + 8) << setfill(fill) << "" << endl;
 	oss << setfill(' ');
-	displayColored(oss.str(), WHITE);
+	displayColored(oss.str(), MENU_WHITE);
 	return cout;
 }
 

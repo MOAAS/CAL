@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include "Graph.h"
 #include "Child.h"
 
@@ -44,8 +45,10 @@ class PoIList
 	bool existsSchool(Vertex* school);
 public:
 	PoIList(Vertex* garage);
+	PoIList(string fileName, const Graph* graph);
+	void save(string fileName);
 	Vertex* getGarage();
-	void setGarage(Vertex* garage);
+	void changeGarage(Vertex* garage);
 	void addHome(Child* child);
 	vector<int> getIDs() const;
 	vector<POI> getPoIs() const;
