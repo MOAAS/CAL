@@ -73,11 +73,3 @@ Graph* GraphBuilder::build() {
 
 	return graph;
 }
-
-void GraphBuilder::setNodeFile(string path) {
-	this->nodeFilePath = path;
-}
-
-void GraphBuilder::setEdgeFile(string path) {
-	this->edgeFilePath = path;
-}

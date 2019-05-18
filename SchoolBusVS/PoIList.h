@@ -13,27 +13,19 @@ public:
 		Garage
 	};
 
-	~POI() {}
-	POI(const POI& poi) {
-		if (poi.type == Kid)
-			this->child = poi.child;
-		else this->vertex = poi.vertex;
-		this->type = poi.type;
-	}
-	POI(Vertex* v, POItype t) : vertex(v), type(t) { }
-	POI(Child* c, POItype t) : child(c), type(t) { }
-	POItype getType() const { return type; }
-	Child* getChild() const { return child; }
-	Vertex* getVertex() const { return vertex; }
-	int getID() const {
-		if (type == Kid)
-			return child->getHome()->getID();
-		return vertex->getID();
-	}
+	POI(const POI& poi);
+	POI(Vertex* v, POItype t);
+	POI(Child* c);
+
+	POItype getType() const;
+	Child* getChild() const;
+	Vertex* getVertex() const;
+	int getID() const;
 private:
 	union {
-		Vertex* vertex;
 		Child* child;
+		Vertex* school;
+		Vertex* garage;
 	};
 	POItype type;
 };

@@ -65,9 +65,6 @@
     <ClCompile Include="Vehicle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Child.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PoIList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
