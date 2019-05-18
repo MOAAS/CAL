@@ -143,7 +143,6 @@
     <ClInclude Include="Vehicle.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Child.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="GraphBuilder.cpp" />
