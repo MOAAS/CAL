@@ -1,5 +1,52 @@
 #include "PoIList.h"
 
+POI::POI(const POI& poi) {
+	switch (poi.type) {
+		case Kid: this->child = poi.child; break;
+		case School: this->school = poi.school; break;
+		case Garage: this->garage = poi.garage; break;
+	}
+	this->type = poi.type;
+}
+
+POI::POI(Vertex* v, POItype t) : type(t) {
+	if (type == Garage)
+		garage = v;
+	else if (type == School)
+		school = v;
+	else logic_error("Type can't be Kid");
+}
+
+POI::POI(Child* c) : child(c) {
+	this->type = Kid;
+}
+
+
+POI::POItype POI::getType() const {
+	return type; 
+}
+
+Child* POI::getChild() const { 
+	return child;
+}
+
+Vertex* POI::getVertex() const {
+	switch (type) {
+		case Kid: return child->getHome();
+		case School: return school;
+		case Garage: return garage;
+		default: return NULL;
+	}
+}
+
+int POI::getID() const {
+	return this->getVertex()->getID();
+}
+
+
+/************* List **************/
+
+
 bool PoIList::existsSchool(Vertex* school) {
 	for (auto poi : this->pois) {
 		if (poi.getType() == POI::School && poi.getVertex()->getID() == school->getID())
@@ -18,7 +65,7 @@ PoIList::PoIList(string fileName, const Graph* graph) {
 	int garageID, homeID, schoolID;
 	f >> garageID;
 	this->garage = graph->findVertex(garageID);
-	pois.push_back(POI(garage, POI::Garage));
+	pois.push_back(POI(this->garage, POI::Garage));
 
 
 	while (f >> homeID && f >> schoolID) {
@@ -43,9 +90,9 @@ Vertex * PoIList::getGarage() {
 }
 
 void PoIList::changeGarage(Vertex * garage) {
-	for (int i = 0; i < pois.size(); i++) {
+	for (size_t i = 0; i < pois.size(); i++) {
 		if (pois[i].getType() == POI::Garage) {
-			pois[i].vertex = garage;
+			pois[i].garage = garage;
 			break;
 		}
 	}
@@ -53,7 +100,7 @@ void PoIList::changeGarage(Vertex * garage) {
 }
 
 void PoIList::addHome(Child* child) {
-	pois.push_back(POI(child, POI::Kid));
+	pois.push_back(POI(child));
 	if (!existsSchool(child->getSchool()))
 		pois.push_back(POI(child->getSchool(), POI::School));
 }

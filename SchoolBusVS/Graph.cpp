@@ -188,6 +188,7 @@ vector<Vertex*> Graph::calculatePrim() {
 	while (!q.empty()) {
 		Vertex* v = q.extractMin();
 		v->visited = true;
+		cout << v->getID() << endl;
 		for (Edge* e : v->adj) {
 			Vertex* w = e->dest;
 			if (!w->visited) {

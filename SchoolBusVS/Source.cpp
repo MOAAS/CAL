@@ -21,18 +21,21 @@ void displayPath(const vector<Vertex*>& path) {
 
 // ------------- GRAPH VIEWER n sei onde pore ------------- //
 
-GraphViewer* createGraphViewer(int width, int height, const Graph* graph) {
-	GraphViewer* gv = new GraphViewer(width, height, false);
+GraphViewer* createGraphViewer(const Graph* graph, bool enableWeights) {
+	GraphViewer* gv = new GraphViewer(600, 600, false);
 	gv->createWindow(600, 600);
 	gv->defineVertexColor("blue");
 	gv->defineEdgeColor("black");
-
+	gv->defineEdgeCurved(false);
 	for (Vertex* vertex : graph->getVertexSet()) {
-		gv->addNode(vertex->getID(), vertex->getX() - 527500, vertex->getY() - 4555555);
+		gv->addNode(vertex->getID(), (int)vertex->getX() - 527500, (int)vertex->getY() - 4555555);
 	}
+
 	for (Vertex* vertex : graph->getVertexSet()) {
 		for (Edge* edge : vertex->getAdj()) {
 			gv->addEdge(edge->getID(), vertex->getID(), edge->getDest()->getID(), EdgeType::DIRECTED);
+			if (enableWeights)
+				gv->setEdgeWeight(edge->getID(), (int)edge->getWeight());
 		}
 	}
 	gv->rearrange();
@@ -42,6 +45,32 @@ GraphViewer* createGraphViewer(int width, int height, const Graph* graph) {
 void destroyGraphViewer(GraphViewer* gv) {
 	gv->closeWindow();
 	free(gv);
+}
+
+void toggleNodeIDs(GraphViewer* gv, const Graph* graph, const vector<int>& poiIDs) {
+	static int enableType = 0;
+
+	enableType = (enableType + 1) % 3;
+
+	switch (enableType) {
+		case 0: cout << "Disabling node IDs... "; break;
+		case 1: cout << "Disabling non POI ids... "; break;
+		case 2: cout << "Enabling all node IDs... "; break;
+	}
+
+	for (Vertex* vertex : graph->getVertexSet()) {
+		gv->addNode(vertex->getID(), (int)vertex->getX() - 527500, (int)vertex->getY() - 4555555);
+		if (enableType == 2)
+			gv->setVertexLabel(vertex->getID(), to_string(vertex->getID()));
+		else gv->clearVertexLabel(vertex->getID());
+	}
+
+	if (enableType == 1) {
+		for (int id : poiIDs) 
+			gv->setVertexLabel(id, to_string(id));
+	}
+
+	cout << "Done." << endl;
 }
 
 void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
@@ -83,6 +112,9 @@ void resetGraphColors(GraphViewer* gv, const vector<Vertex*>& vertexSet, const P
 	Menu::displayColored("Done.", MENU_YELLOW) << endl;
 }
 
+/******************************\
+|*******  MENU OPTIONS ********|
+\******************************/
 
 void shortestPathOption(GraphViewer* gv, Graph* graph, const PoIList& poiList, PathMatrix* matrix) {
 	while (true) {
@@ -168,6 +200,40 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
 }
 
+Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
+	Graph* graph = new Graph();
+
+	for (POI poi : poiList) {
+		graph->addVertex(poi.getID(), poi.getVertex()->getX(), poi.getVertex()->getY());
+	}
+
+	int edgeId = 0;
+	for (size_t i = 0; i < poiList.size(); i++) {
+		int iID = poiList[i].getID();
+		for (size_t j = 0; j < poiList.size(); j++) {
+			int jID = poiList[j].getID();
+			graph->addEdge(edgeId++, iID, jID, matrix->getDist(iID, jID));
+		}
+	}
+	
+	return graph;
+}
+
+void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
+	Menu::printHeader("Test feature");
+	Graph* graph = makeGraphFromPoIs(poiList.getPoIs(), matrix);
+	GraphViewer* gv = createGraphViewer(graph, true);
+	highlightPoIs(gv, poiList);
+
+	system("pause");
+
+
+	destroyGraphViewer(gv);
+}
+/******************************\
+|********* LOAD / SAVE ********|
+\******************************/
+
 void saveVehicles(const vector<Vehicle*>& vehicles) {
 	ofstream f("../Files/vehicles.txt");
 
@@ -186,15 +252,11 @@ vector<Vehicle*> loadVehicles() {
 	return vehicles;
 }
 
+
 int main() {
 	cout << "HELLO WORLD" << endl;
-
-	GraphBuilder builder;
-	builder.setNodeFile("../Graphs/nodes.txt");
-	builder.setEdgeFile("../Graphs/edges.txt");
-
 	cout << "Loading Graph..." << endl;
-	Graph* graph = builder.build();
+	Graph* graph = GraphBuilder("../Graphs/nodes.txt", "../Graphs/edges.txt").build();
 
 	cout << "Loading PoIs..." << endl;
 	PoIList poiList("../Files/pois.txt", graph);
@@ -203,7 +265,7 @@ int main() {
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
 
 	cout << "Opening Graph Viewer..." << endl;
-	GraphViewer *gv = createGraphViewer(2000, 2000, graph);
+	GraphViewer *gv = createGraphViewer(graph, false);
 	highlightPoIs(gv, poiList);
 	   
 	cout << "Loading vehicles..." << endl;
@@ -218,8 +280,10 @@ int main() {
 		cout << " 4 - Set garage point" << endl;
 		cout << " 5 - Verify connectivity " << endl;
 		cout << " 6 - Update Graph Viewer PoIs" << endl;
-		cout << " 7 - Save and quit" << endl;
-		Menu::getInput<int>("Option: ", option, 1, 8);
+		cout << " 7 - Test feature" << endl;
+		cout << " 8 - Toggle node IDs" << endl;
+		cout << " 0 - Save and quit" << endl;
+		Menu::getInput<int>("Option: ", option, 0, 8);
 
 		switch (option) {
 			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
@@ -228,7 +292,12 @@ int main() {
 			case 4: setGarage(gv, graph, poiList, matrix); break;
 			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
 			case 6: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
-			case 7: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
+			case 7: showPoIsOnly(poiList, matrix); break;
+			case 8: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
+			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
+
 		}
 	}
+
+	destroyGraphViewer(gv);
 }

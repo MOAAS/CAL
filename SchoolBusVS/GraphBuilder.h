@@ -10,14 +10,12 @@
 using namespace std;
 
 class GraphBuilder {
-	string nodeFilePath = "";
-	string edgeFilePath = "";
+	string nodeFilePath;
+	string edgeFilePath;
 public:
 
+	GraphBuilder(string nodeFilePath, string edgeFilePath) : nodeFilePath(nodeFilePath), edgeFilePath(edgeFilePath) {}
 
 	Graph* build();
-
-	void setNodeFile(string path);
-	void setEdgeFile(string path);
 };
 
