@@ -79,11 +79,15 @@ public:
 	int getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
+	void BFS(Vertex* s);
+	void transpose(Graph* transposed);
 	PathMatrix* multipleDijkstra(const vector<int>& POIids);
 	void dijkstraShortestPath(int sourceID);
 	vector<Vertex*> getPath(Vertex* v) const;
 
+
 	vector<Vertex*> calculatePrim();
+	bool stronglyConnected();
 
 };
 

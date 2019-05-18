@@ -168,6 +168,13 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
 }
 
+void verifyStronglyConnected(Graph* graph) {
+	Menu::printHeader("Graph strongly connected check");
+	if(graph->stronglyConnected())
+		Menu::printHeader("Graph is strongly connected");
+	else Menu::printHeader("Graph is not strongly connected");
+}
+
 void saveVehicles(const vector<Vehicle*>& vehicles) {
 	ofstream f("../Files/vehicles.txt");
 
@@ -217,8 +224,9 @@ int main() {
 		cout << " 3 - Add kid" << endl;
 		cout << " 4 - Set garage point" << endl;
 		cout << " 5 - Verify connectivity " << endl;
-		cout << " 6 - Update Graph Viewer PoIs" << endl;
-		cout << " 7 - Save and quit" << endl;
+		cout << " 6 - Verify graph strong connectivity" << endl;
+		cout << " 7 - Update Graph Viewer PoIs" << endl;
+		cout << " 8 - Save and quit" << endl;
 		Menu::getInput<int>("Option: ", option, 1, 8);
 
 		switch (option) {
@@ -227,8 +235,9 @@ int main() {
 			case 3: addKid(gv, graph, poiList, matrix); break;
 			case 4: setGarage(gv, graph, poiList, matrix); break;
 			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
-			case 6: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
-			case 7: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
+			case 6:	verifyStronglyConnected(graph); break;
+			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
+			case 8: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 		}
 	}
 }

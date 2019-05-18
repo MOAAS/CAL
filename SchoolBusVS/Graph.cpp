@@ -108,6 +108,57 @@ bool Graph::addEdge(int edgeID, int srcID, int destID, double w) {
 	return true;
 }
 
+
+/*** Breadth First Search***/
+
+void Graph::BFS(Vertex* s)
+{
+	// Mark all the vertices as not visited 
+	for (auto v : vertexSet) {
+		v->visited = false; // known(v) in slides	
+	}
+
+	// Create a queue for BFS 
+	list<Vertex*> queue;
+
+	// Mark the current node as visited and enqueue it 
+	s->visited = true;
+	queue.push_back(s);
+
+	// 'i' will be used to get all adjacent 
+	// vertices of a vertex 
+	list<int>::iterator i;
+
+	while (!queue.empty())
+	{
+		// Dequeue a vertex from queue
+		s = queue.front();
+		queue.pop_front();
+
+		// Get all adjacent vertices of the dequeued 
+		// vertex s. If a adjacent has not been visited,  
+		// then mark it visited and enqueue it 
+		for(auto edge : s->adj)
+		{
+			
+			if (!(edge->dest->visited))
+			{
+				edge->dest->visited = true;
+				queue.push_back(edge->dest);
+			}
+		}
+	}
+}
+
+/*** Transpose Graph***/
+void Graph::transpose(Graph* transposed) {
+	for (Vertex* vertex : vertexSet)
+		for (auto edge : vertex->adj){
+			transposed->addVertex(vertex->ID, vertex->x, vertex->y);
+			transposed->addEdge(edge->ID, edge->dest->ID, vertex->ID, edge->weight);
+		}
+}
+
 /*** Shortest Path between POIs ***/
 
 PathMatrix* Graph::multipleDijkstra(const vector<int>& POIids) {
@@ -203,4 +254,26 @@ vector<Vertex*> Graph::calculatePrim() {
 		}
 	}
 	return this->vertexSet; 
+}
+
+
+/***** Strongly Connected ****/
+
+bool Graph::stronglyConnected() {
+	BFS(vertexSet.front());
+	for (auto v : vertexSet) {
+		if (!v->visited)
+			return false;
+	}
+
+	Graph transposed;
+
+	transpose(&transposed);
+	transposed.BFS(transposed.vertexSet.front());
+	for (auto v : transposed.vertexSet) {
+		if (!v->visited)
+			return false;
+	}
+
+	return true;
 }
