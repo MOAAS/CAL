@@ -105,7 +105,6 @@ bool GraphViewer::addNode(int id, int x, int y) {
   char buff[200];
   sprintf(buff, "addNode3 %d %d %d\n", id, x, y);
   string str(buff);
-  cout << id << " " << x << " " << y << endl;
   return con->sendMsg(str);
 }
 

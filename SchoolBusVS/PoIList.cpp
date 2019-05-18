@@ -8,8 +8,22 @@ bool PoIList::existsSchool(Vertex* school) {
 	return false;
 }
 
-PoIList::PoIList(Vertex * garage) : garage(*garage) {
+PoIList::PoIList(Vertex * garage) : garage(garage) {
 	pois.push_back(POI(garage, POI::Garage));
+}
+
+Vertex * PoIList::getGarage() {
+	return garage;
+}
+
+void PoIList::setGarage(Vertex * garage) {
+	for (int i = 0; i < pois.size(); i++) {
+		if (pois[i].getType() == POI::Garage) {
+			pois[i].vertex = garage;
+			break;
+		}
+	}
+	this->garage = garage;
 }
 
 void PoIList::addHome(Child* child) {
@@ -26,4 +40,8 @@ vector<int> PoIList::getIDs() const {
 	}
 
 	return list;
+}
+
+vector<POI> PoIList::getPoIs() const {
+	return pois;
 }

@@ -29,8 +29,8 @@ struct EdgeInfo {
 	}
 };
 
-Graph GraphBuilder::build() {
-	Graph graph;
+Graph* GraphBuilder::build() {
+	Graph* graph = new Graph;
 
 	ifstream nodeFile(this->nodeFilePath);
 	ifstream edgeFile(this->edgeFilePath);
@@ -49,14 +49,14 @@ Graph GraphBuilder::build() {
 
 	while (getline(nodeFile, line)) {
 		VertexInfo v(line);
-		graph.addVertex(v.ID, v.x, v.y);
-		//cout << fixed << setprecision(5) << "V: " << v.ID << " " << v.x << " " << v.y << endl;
+		graph->addVertex(v.ID, v.x, v.y);
 	}
 
+	int id = 0;
 	while (getline(edgeFile, line)) {
 		EdgeInfo e(line);
-		Vertex* src = graph.findVertex(e.srcID);
-		Vertex* dest = graph.findVertex(e.destID);
+		Vertex* src = graph->findVertex(e.srcID);
+		Vertex* dest = graph->findVertex(e.destID);
 		if (src == NULL) {
 			cout << "Error: Couldn't find vertex with srcID = " << e.srcID << endl;
 			throw exception();
@@ -67,8 +67,8 @@ Graph GraphBuilder::build() {
 		}
 
 		double dist = sqrt(pow(src->getX() - dest->getX(), 2) + pow(src->getY() - dest->getY(), 2));
-		graph.addEdge(e.srcID, e.destID, dist);
-		//cout << fixed << setprecision(5) << "E: " << e.srcID << " " << e.destID << " " << dist << endl;
+		graph->addEdge(id++, e.srcID, e.destID, dist);
+		graph->addEdge(id++, e.destID, e.srcID, dist); // undirected ( test ) :D
 	}
 
 	return graph;

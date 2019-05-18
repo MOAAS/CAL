@@ -15,7 +15,7 @@ class GraphBuilder {
 public:
 
 
-	Graph build();
+	Graph* build();
 
 	void setNodeFile(string path);
 	void setEdgeFile(string path);

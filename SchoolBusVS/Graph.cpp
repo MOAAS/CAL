@@ -2,7 +2,7 @@
 
 // -- Edge -- //
 
-Edge::Edge(Vertex *d, double w) : dest(d), weight(w) {
+Edge::Edge(int ID, Vertex *d, double w) : ID(ID), dest(d), weight(w) {
 
 }
 
@@ -10,10 +10,22 @@ Vertex * Edge::getDest() {
 	return dest;
 }
 
+int Edge::getID() {
+	return ID;
+}
+
+double Edge::getWeight() {
+	return weight;
+}
+
 // -- Vertex -- //
 
-void Vertex::addEdge(Vertex *d, double w) {
-	adj.push_back(Edge(d, w));
+void Vertex::addEdge(int ID, Vertex *d, double w) {
+	for (Edge* e : adj) {		
+		if (e->dest == d)
+			return;
+	}
+	adj.push_back(new Edge(ID, d, w));
 }
 
 inline Vertex::Vertex(int ID, double x, double y) {
@@ -42,7 +54,7 @@ double Vertex::getDist() const {
 	return this->dist;
 }
 
-vector<Edge> Vertex::getAdj() const {
+vector<Edge*> Vertex::getAdj() const {
 	return adj;
 }
 
@@ -68,6 +80,16 @@ Vertex * Graph::findVertex(int ID) const {
 	return NULL;
 }
 
+Edge* Graph::findEdge(int ID) const {
+	for (Vertex* v : vertexSet) {
+		for (Edge* e : v->getAdj()) {
+			if (e->getID() == ID)
+				return e;
+		}
+	}
+	return NULL;
+}
+
 bool Graph::addVertex(int ID, double x, double y) {
 	if (findVertex(ID) != NULL)
 		return false;
@@ -75,24 +97,26 @@ bool Graph::addVertex(int ID, double x, double y) {
 	return true;
 }
 
-bool Graph::addEdge(int srcID, int destID, double w) {
-	auto v1 = findVertex(srcID);
-	auto v2 = findVertex(destID);
+bool Graph::addEdge(int edgeID, int srcID, int destID, double w) {
+	Vertex* v1 = findVertex(srcID);
+	Vertex* v2 = findVertex(destID);
 	if (v1 == NULL || v2 == NULL)
 		return false;
-	v1->addEdge(v2, w);
+	if (findEdge(edgeID) != NULL)
+		return false;
+	v1->addEdge(edgeID, v2, w);
 	return true;
 }
 
 /*** Shortest Path between POIs ***/
 
-PathMatrix Graph::multipleDijkstra(const vector<int>& POIids) {
-	PathMatrix matrix;
+PathMatrix* Graph::multipleDijkstra(const vector<int>& POIids) {
+	PathMatrix* matrix = new PathMatrix();
 	for (int srcID : POIids) {
 		dijkstraShortestPath(srcID);
 		for (int destID : POIids) {
 			Vertex* dest = findVertex(destID);
-			matrix.setPath(srcID, destID, dest->dist, this->getPath(dest));
+			matrix->setPath(srcID, destID, dest->dist, this->getPath(dest));
 		}
 	}
 	return matrix;
@@ -116,13 +140,13 @@ void Graph::dijkstraShortestPath(int sourceID) {
 	while (!queue.empty()) {
 		src = queue.extractMin();
 		for (auto edge : src->adj) {
-			if (edge.dest->dist > src->dist + edge.weight) {
-				double oldDist = edge.dest->dist;
-				edge.dest->dist = src->dist + edge.weight;
-				edge.dest->path = src;
+			if (edge->dest->dist > src->dist + edge->weight) {
+				double oldDist = edge->dest->dist;
+				edge->dest->dist = src->dist + edge->weight;
+				edge->dest->path = src;
 				if (oldDist == INF)
-					queue.insert(edge.dest);
-				else queue.decreaseKey(edge.dest);
+					queue.insert(edge->dest);
+				else queue.decreaseKey(edge->dest);
 			}
 		}
 	}

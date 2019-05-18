@@ -23,10 +23,13 @@ class PathMatrix;
 
 class Edge {
 	Vertex * dest;      // destination vertex
-	double weight;         // edge weight
+	double weight;      // edge weight
+	int ID;
 public:
-	Edge(Vertex *d, double w);
+	Edge(int ID, Vertex *d, double w);
 	Vertex* getDest();
+	int getID();
+	double getWeight();
 	friend class Graph;
 	friend class Vertex;
 };
@@ -38,7 +41,7 @@ public:
 class Vertex {
 	int ID;
 	double x, y;
-	vector<Edge> adj;  // outgoing edges
+	vector<Edge*> adj;  // outgoing edges
 
 	// auxiliary...
 	bool visited;         
@@ -46,7 +49,7 @@ class Vertex {
 	Vertex *path = NULL;
 	int queueIndex = 0; 		// required by MutablePriorityQueue
 	bool processing = false;
-	void addEdge(Vertex *dest, double w);
+	void addEdge(int ID, Vertex *dest, double w);
 public:
 	Vertex(int ID, double x, double y);
 	bool operator<(Vertex & vertex) const; // // required by MutablePriorityQueue
@@ -54,7 +57,7 @@ public:
 	double getX() const;
 	double getY() const;
 	double getDist() const;
-	vector<Edge> getAdj() const;
+	vector<Edge*> getAdj() const;
 	Vertex *getPath() const;
 	friend class Graph;
 	friend class MutablePriorityQueue<Vertex>;
@@ -68,13 +71,14 @@ class Graph {
 	vector<vector<int>> Path;
 	vector<Vertex *> vertexSet;    // vertex set
 public:
-	Vertex *findVertex(int id) const;
+	Vertex* findVertex(int id) const;
+	Edge* findEdge(int id) const;
 	bool addVertex(int ID, double x, double y);
-	bool addEdge(int srcID, int destID, double w);
+	bool addEdge(int edgeID, int srcID, int destID, double w);
 	int getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
-	PathMatrix multipleDijkstra(const vector<int>& POIids);
+	PathMatrix* multipleDijkstra(const vector<int>& POIids);
 	void dijkstraShortestPath(int sourceID);
 	vector<Vertex*> getPath(Vertex* v) const;
 };

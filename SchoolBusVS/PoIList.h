@@ -4,6 +4,7 @@
 #include "Child.h"
 
 class POI {
+	friend class PoIList;
 public:
 	enum POItype {
 		Kid,
@@ -39,11 +40,14 @@ private:
 class PoIList
 {
 	vector<POI> pois;
-	Vertex garage;
+	Vertex* garage;
 	bool existsSchool(Vertex* school);
 public:
 	PoIList(Vertex* garage);
+	Vertex* getGarage();
+	void setGarage(Vertex* garage);
 	void addHome(Child* child);
 	vector<int> getIDs() const;
+	vector<POI> getPoIs() const;
 };
 
