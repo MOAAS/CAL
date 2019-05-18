@@ -9,7 +9,7 @@
 #include "MutablePriorityQueue.h"
 #include "PathMatrix.h"
 
-#define INF std::numeric_limits<double>::max()
+#define INF (std::numeric_limits<double>::max)()
 
 using namespace std;
 
@@ -59,6 +59,7 @@ public:
 	double getDist() const;
 	vector<Edge*> getAdj() const;
 	Vertex *getPath() const;
+
 	friend class Graph;
 	friend class MutablePriorityQueue<Vertex>;
 };
@@ -81,6 +82,9 @@ public:
 	PathMatrix* multipleDijkstra(const vector<int>& POIids);
 	void dijkstraShortestPath(int sourceID);
 	vector<Vertex*> getPath(Vertex* v) const;
+
+	vector<Vertex*> calculatePrim();
+
 };
 
 

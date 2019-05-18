@@ -164,3 +164,43 @@ vector<Vertex *> Graph::getPath(Vertex* dest) const {
 	reverse(res.begin(), res.end());
 	return res;
 }
+
+/***** P R I M ****/
+
+vector<Vertex*> Graph::calculatePrim() {
+	if (vertexSet.size() == 0)
+		return this->vertexSet;
+	// Reset auxiliary info
+	for(auto v : vertexSet) {
+		v->dist = INF;v->path = nullptr;
+		v->visited = false; // known(v) in slides	
+	}
+	
+	// start with an arbitrary vertex
+	Vertex* s = vertexSet.front();
+	s->dist = 0;
+	
+	// initializepriority queue
+	MutablePriorityQueue<Vertex> q;
+	q.insert(s);
+
+	// process vertices in the priority queue
+	while (!q.empty()) {
+		Vertex* v = q.extractMin();
+		v->visited = true;
+		for (Edge* e : v->adj) {
+			Vertex* w = e->dest;
+			if (!w->visited) {
+				auto oldDist = w->dist;
+				if (e->weight < w->dist) {
+					w->dist = e->weight;
+					w->path = v;
+					if (oldDist == INF)
+						q.insert(w);
+					else q.decreaseKey(w);
+				}
+			}
+		}
+	}
+	return this->vertexSet; 
+}

@@ -153,9 +153,9 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	Menu::displayColored("Checking connectivity for the following PoIs: ", MENU_WHITE);
 	printVector::ofValues(cout, ids, " ") << endl;
 	int missingPaths = 0;
-	for (int i = 0; i < ids.size(); i++) {
-		for (int j = 0; j < ids.size(); j++) {
-			if (matrix->getDist(i, j) == 9) {
+	for (size_t i = 0; i < ids.size(); i++) {
+		for (size_t j = 0; j < ids.size(); j++) {
+			if (matrix->getDist(ids[i], ids[j]) == INF) {
 				cout << "There is no path from " << ids[i] << " to " << ids[j] << endl;
 				missingPaths++;
 			}
@@ -169,7 +169,7 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 }
 
 void saveVehicles(const vector<Vehicle*>& vehicles) {
-	ofstream f("../Files/vehicless.txt");
+	ofstream f("../Files/vehicles.txt");
 
 	for (Vehicle* vehicle : vehicles) {
 		f << vehicle->getCapacity() << " ";
@@ -193,13 +193,20 @@ int main() {
 	builder.setNodeFile("../Graphs/nodes.txt");
 	builder.setEdgeFile("../Graphs/edges.txt");
 
+	cout << "Loading Graph..." << endl;
 	Graph* graph = builder.build();
+
+	cout << "Loading PoIs..." << endl;
 	PoIList poiList("../Files/pois.txt", graph);
+
+	cout << "Pre-processing..." << endl;
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
 
+	cout << "Opening Graph Viewer..." << endl;
 	GraphViewer *gv = createGraphViewer(2000, 2000, graph);
 	highlightPoIs(gv, poiList);
 	   
+	cout << "Loading vehicles..." << endl;
 	vector<Vehicle*> vehicles = loadVehicles();
 
 	while (true) {
@@ -221,7 +228,7 @@ int main() {
 			case 4: setGarage(gv, graph, poiList, matrix); break;
 			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
 			case 6: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
-			case 7: poiList.save("../Files/poiss.txt"); saveVehicles(vehicles); break;
+			case 7: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 		}
 	}
 }
