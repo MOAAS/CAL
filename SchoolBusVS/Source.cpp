@@ -54,9 +54,9 @@ void toggleNodeIDs(GraphViewer* gv, const Graph* graph, const vector<int>& poiID
 	enableType = (enableType + 1) % 3;
 
 	switch (enableType) {
-		case 0: cout << "Disabling node IDs... "; break;
-		case 1: cout << "Disabling non POI ids... "; break;
-		case 2: cout << "Enabling all node IDs... "; break;
+	case 0: cout << "Disabling node IDs... "; break;
+	case 1: cout << "Disabling non POI ids... "; break;
+	case 2: cout << "Enabling all node IDs... "; break;
 	}
 
 	for (Vertex* vertex : graph->getVertexSet()) {
@@ -67,7 +67,7 @@ void toggleNodeIDs(GraphViewer* gv, const Graph* graph, const vector<int>& poiID
 	}
 
 	if (enableType == 1) {
-		for (int id : poiIDs) 
+		for (int id : poiIDs)
 			gv->setVertexLabel(id, to_string(id));
 	}
 
@@ -95,9 +95,9 @@ void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
 void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
 	for (POI poi : pois.getPoIs()) {
 		switch (poi.getType()) {
-		    case POI::Garage: gv->setVertexColor(poi.getID(), LIGHT_GRAY); break;
-			case POI::School: gv->setVertexColor(poi.getID(), WHITE); break;
-			case POI::Kid: gv->setVertexColor(poi.getID(), ORANGE); break;
+		case POI::Garage: gv->setVertexColor(poi.getID(), LIGHT_GRAY); break;
+		case POI::School: gv->setVertexColor(poi.getID(), WHITE); break;
+		case POI::Kid: gv->setVertexColor(poi.getID(), ORANGE); break;
 		}
 	}
 }
@@ -203,12 +203,12 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
 }
 
-void articulationPoints(GraphViewer* gv , Graph* graph, const vector<int>& ids) {
+void articulationPoints(GraphViewer* gv, Graph* graph, const vector<int>& ids) {
 	Menu::printHeader("Articulation Points");
 	vector<Vertex *> articulationPoints = graph->articulationPoints(ids);
 	if (articulationPoints.size() > 0) {
 		Menu::displayColored("There are articulation Points between PoIs", MENU_LIGHTRED) << endl;
-		for(Vertex * v : articulationPoints)
+		for (Vertex * v : articulationPoints)
 			gv->setVertexColor(v->getID(), RED);
 	}
 	else Menu::displayColored("There are no articulation Points between PoIs", MENU_LIGHTGREEN) << endl;
@@ -216,7 +216,7 @@ void articulationPoints(GraphViewer* gv , Graph* graph, const vector<int>& ids) 
 
 void verifyStronglyConnected(Graph* graph) {
 	Menu::printHeader("Graph strongly connected check");
-	if(graph->stronglyConnected())
+	if (graph->stronglyConnected())
 		Menu::displayColored("Graph is strongly connected", MENU_LIGHTGREEN);
 	else Menu::displayColored("Graph is not strongly connected", MENU_LIGHTRED);
 }
@@ -237,7 +237,7 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 			graph->addEdge(edgeId++, iID, jID, matrix->getDist(iID, jID));
 		}
 	}
-	
+
 	return graph;
 }
 
@@ -300,6 +300,23 @@ void assignKids(vector<Child*>& kidsLeft, Vehicle* vehicle, Vertex* garage, Path
 
 }
 
+vector<Child *> orderKids(vector<POI> poiList, PathMatrix* matrix) {
+	Graph* graph = makeGraphFromPoIs(poiList, matrix);
+	vector<Vertex *> route = graph->calculatePrim();
+	vector<Child *> orderedKids;
+
+	for (size_t i = 0; i < route.size(); i++) {
+		for (size_t j = 0; j < poiList.size(); j++)
+			if (route.at(i)->getID == poiList.at(j).getID) {
+				if (poiList.at(j).getType == POI::Kid)
+					orderedKids.push_back(poiList.at(j).getChild());
+				poiList.erase(poiList.begin() + j);
+			}
+	}
+
+	return orderedKids;
+}
+
 void calculatePath(vector<Child*>& orderedKids, const PoIList& poiList, PathMatrix* matrix, const vector<Vehicle*>& vehicles) {
 	for (Vehicle* vehicle : vehicles) {
 		assignKids(orderedKids, vehicle, poiList.getGarage(), matrix);
@@ -320,8 +337,10 @@ void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 }
 
 /******************************\
-|******* CALCULATE ROUTE ******|
+|******* NEAREST INSERTION ******|???????
 \******************************/
+
+//????
 vector<POI> nearestInsertion(PoIList poiList, PathMatrix* matrix) {
 	vector<POI> pois = poiList.getPoIs();
 	vector<POI> poiRoute;
@@ -330,53 +349,24 @@ vector<POI> nearestInsertion(PoIList poiList, PathMatrix* matrix) {
 
 	for (size_t i = 1; i < pois.size(); i++) {
 		size_t j;
-		int cost;
-		vector<POI>::iterator insertPosition;		
-		
-		switch (pois.at(i).getType()){
-			case POI::School:
-				cost = matrix->getDist(poiRoute.at(poiRoute.size() - 1).getID, pois.at(i).getID());
-				insertPosition = poiRoute.end();
-				for (j = poiRoute.size() - 2; j >= 0; j--) {
-					if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
-						cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
-						insertPosition = poiRoute.begin() + j + 1;
-					}
-					if (pois.at(j).getChild()->getSchool()->getID() == poiRoute.at(i).getID())
-						break;
-				}
+		int cost = matrix->getDist(poiRoute.at(0).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(1).getID()) - matrix->getDist(poiRoute.at(0).getID(), poiRoute.at(1).getID());
+		vector<POI>::iterator insertPosition = poiRoute.begin() + 1;
+		for (j = 1; j < poiRoute.size(); j++) {
+			if (poiRoute.at(j).getID() == pois.at(i).getChild()->getSchool()->getID())
 				break;
-			case POI::Kid:
-				cost = matrix->getDist(poiRoute.at(0).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(1).getID()) - matrix->getDist(poiRoute.at(0).getID(), poiRoute.at(1).getID());
-				insertPosition = poiRoute.begin() + 1;
-				for (j = 1; j < poiRoute.size(); j++) {
-					if (poiRoute.at(j).getID() == pois.at(i).getChild()->getSchool()->getID())
-						break;
-					if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
-						cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
-						insertPosition = poiRoute.begin() + j + 1;
-					}
-				}
-				if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()))
-					insertPosition = poiRoute.end();
-				break;
-			default:
-				break;
+			if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
+				cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
+				insertPosition = poiRoute.begin() + j + 1;
+			}
 		}
+		if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()))
+			insertPosition = poiRoute.end();
+
 		poiRoute.insert(insertPosition, pois.at(i));
 	}
-		
 	return poiRoute;
 }
-
-vector<Vertex *> calculateRoute(const vector<POI>& poiList, PathMatrix* matrix) {
-	Graph* graph = makeGraphFromPoIs(poiList, matrix);
-
-	vector<Vertex *> route = graph->calculatePrim();
-
-
-}
-
+// ?????
 
 /******************************\
 |********* LOAD / SAVE ********|
@@ -415,7 +405,7 @@ int main() {
 	cout << "Opening Graph Viewer..." << endl;
 	GraphViewer *gv = createGraphViewer(graph, false);
 	highlightPoIs(gv, poiList);
-	   
+
 	cout << "Loading vehicles..." << endl;
 	vector<Vehicle*> vehicles = loadVehicles();
 
@@ -436,17 +426,17 @@ int main() {
 		Menu::getInput<int>("Option: ", option, 0, 10);
 
 		switch (option) {
-			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
-			case 2: addVehicle(vehicles); break;
-			case 3: addKid(gv, graph, poiList, matrix); break;
-			case 4: setGarage(gv, graph, poiList, matrix); break;
-			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
-			case 6:	verifyStronglyConnected(graph); break;
-			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
-			case 8: showPoIsOnly(poiList, matrix); break;
-			case 9: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
-			case 10: articulationPoints(gv ,graph, poiList.getIDs()); break;
-			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
+		case 1: shortestPathOption(gv, graph, poiList, matrix); break;
+		case 2: addVehicle(vehicles); break;
+		case 3: addKid(gv, graph, poiList, matrix); break;
+		case 4: setGarage(gv, graph, poiList, matrix); break;
+		case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
+		case 6:	verifyStronglyConnected(graph); break;
+		case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
+		case 8: showPoIsOnly(poiList, matrix); break;
+		case 9: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
+		case 10: articulationPoints(gv, graph, poiList.getIDs()); break;
+		case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 
 		}
 	}
