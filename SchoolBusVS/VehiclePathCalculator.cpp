@@ -15,23 +15,31 @@ VehiclePathCalculator::VehiclePathCalculator(const vector<Child*>& orderedKids, 
 
 
 void VehiclePathCalculator::assignKidGo(Child* child, vector<POI>& path, PathMatrix* matrix) {
+	if (path.size() == 1) {
+		path.insert(path.begin() + 1, POI(child));
+		return;
+	}
+
 	int homeID = child->getHome()->getID();
 	int assignedSpot = 1;
-	double distIncrease;
-	if (path.size() == 1)
-		distIncrease = matrix->getDist(path[path.size() - 1].getID(), homeID);
-	else distIncrease = matrix->getDist(path[0].getID(), homeID) + matrix->getDist(homeID, path[1].getID()) - matrix->getDist(path[0].getID(), path[1].getID());
+	double distIncrease = matrix->getDist(path[0].getID(), homeID) + matrix->getDist(homeID, path[1].getID()) - matrix->getDist(path[0].getID(), path[1].getID());
 
 	for (int i = 2; i < (int)path.size(); i++) {
-		if (path[i].getType() == POI::School && path[i].getVertex() == child->getSchool())
-			break;
 		double oldDist = matrix->getDist(path[i - 1].getID(), path[i].getID());
 		double newDist = matrix->getDist(path[i - 1].getID(), homeID) + matrix->getDist(homeID, path[i].getID());
 		if (newDist - oldDist < distIncrease) {
 			assignedSpot = i;
 			distIncrease = newDist - oldDist;
 		}
+		if (path[i].getType() == POI::School && path[i].getVertex() == child->getSchool()) {
+			path.insert(path.begin() + assignedSpot, POI(child));
+			return;
+		}
 	}
+
+	if (matrix->getDist(path[path.size() - 1].getID(), homeID) < distIncrease)
+		assignedSpot = path.size();
+
 	path.insert(path.begin() + assignedSpot, POI(child));
 }
 
@@ -81,23 +89,31 @@ void VehiclePathCalculator::assignSchoolReturn(Vertex* school, vector<POI>& retu
 		if (poi.getType() == POI::School && poi.getVertex() == school)
 			return;
 
+	if (returnPath.size() == 1) {
+		returnPath.insert(returnPath.begin() + 1, POI(school, POI::School));
+		return;
+	}
+
 	int schoolID = school->getID();
 	int assignedSpot = 1;
-	double distIncrease;
-	if (returnPath.size() == 1)
-		distIncrease = matrix->getDist(returnPath[returnPath.size() - 1].getID(), schoolID);
-	else distIncrease = matrix->getDist(returnPath[0].getID(), schoolID) + matrix->getDist(schoolID, returnPath[1].getID()) - matrix->getDist(returnPath[0].getID(), returnPath[1].getID());
+	double distIncrease = matrix->getDist(returnPath[0].getID(), schoolID) + matrix->getDist(schoolID, returnPath[1].getID()) - matrix->getDist(returnPath[0].getID(), returnPath[1].getID());
 
 	for (int i = 2; i < (int)returnPath.size(); i++) {
-		if (returnPath[i].getType() == POI::Kid && returnPath[i].getChild()->getSchool() == school)
-			break;
 		double oldDist = matrix->getDist(returnPath[i - 1].getID(), returnPath[i].getID());
 		double newDist = matrix->getDist(returnPath[i - 1].getID(), schoolID) + matrix->getDist(schoolID, returnPath[i].getID());
 		if (newDist - oldDist < distIncrease) {
 			assignedSpot = i;
 			distIncrease = newDist - oldDist;
 		}
+		if (returnPath[i].getType() == POI::Kid && returnPath[i].getChild()->getSchool() == school) {
+			returnPath.insert(returnPath.begin() + assignedSpot, POI(school, POI::School));
+			return;
+		}
 	}
+
+	if (matrix->getDist(returnPath[returnPath.size() - 1].getID(), schoolID) < distIncrease)
+		assignedSpot = returnPath.size();
+
 
 	returnPath.insert(returnPath.begin() + assignedSpot, POI(school, POI::School));
 }
