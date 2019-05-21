@@ -1,11 +1,11 @@
 #include "Vehicle.h"
 
 
-Vehicle::Vehicle(int capacity) {
+Vehicle::Vehicle(size_t capacity) {
 	this->capacity = capacity;
 }
 
-int Vehicle::getCapacity() const
+size_t Vehicle::getCapacity() const
 {
 	return capacity;
 }
@@ -15,17 +15,17 @@ vector<Child*> Vehicle::getChildren() const
 	return children;
 }
 
-vector<Vertex*> Vehicle::getPath() const
+vector<VehiclePathVertex> Vehicle::getPath() const
 {
 	return path;
 }
 
-vector<Vertex*> Vehicle::getReturnPath() const
+vector<VehiclePathVertex> Vehicle::getReturnPath() const
 {
 	return returnPath;
 }
 
-void Vehicle::assignPath(const vector<Vertex*>& path, const vector<Vertex*>& returnPath) {
+void Vehicle::assignPath(const vector<VehiclePathVertex>& path, const vector<VehiclePathVertex>& returnPath) {
 	this->path = path;
 	this->returnPath = returnPath;
 }

@@ -2,6 +2,7 @@
 #include "GraphBuilder.h"
 #include "Vehicle.h"
 #include "Menu.h"
+#include "VehiclePathCalculator.h"
 
 #include <iostream>
 #include "PoIList.h"
@@ -72,6 +73,7 @@ void toggleNodeIDs(GraphViewer* gv, const Graph* graph, const vector<int>& poiID
 	}
 
 	cout << "Done." << endl;
+	gv->rearrange();
 }
 
 void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
@@ -90,6 +92,7 @@ void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
 	if (path.size() == 1)
 		return;
 	gv->setVertexColor(path[path.size() - 1]->getID(), RED);
+	gv->rearrange();
 }
 
 void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
@@ -100,6 +103,7 @@ void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
 			case POI::Kid: gv->setVertexColor(poi.getID(), ORANGE); break;
 		}
 	}
+	gv->rearrange();
 }
 
 void resetGraphColors(GraphViewer* gv, const vector<Vertex*>& vertexSet, const PoIList& pois) {
@@ -241,71 +245,50 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	return graph;
 }
 
-void assignKid(Child* child, vector<POI>& path, PathMatrix* matrix) {
-	int homeID = child->getHome()->getID();
-	size_t assignedSpot = path.size();
-	double distIncrease = matrix->getDist(path[path.size() - 1].getID(), homeID);
-	for (int i = assignedSpot - 1; i >= 1; i--) {
-		double oldDist = matrix->getDist(path[i - 1].getID(), path[i + 1].getID());
-		double newDist = matrix->getDist(path[i - 1].getID(), homeID) + matrix->getDist(homeID, path[i + 1].getID());
-		if (newDist - oldDist < distIncrease) {
-			assignedSpot = i;
-			distIncrease = newDist - oldDist;
+void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehiclePathVertex>& path) {
+	for (VehiclePathVertex v : path) {
+		if (!v.isPoI) {
+			Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_CYAN);
+			continue;
+		}
+		switch (v.type) {
+		case POI::Garage: Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_LIGHTGRAY); break;
+		case POI::School: Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_LIGHTRED); break;
+		case POI::Kid: Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_LIGHTGREEN); break;
 		}
 	}
-	path.insert(path.begin() + assignedSpot, POI(child));
+
+	vector<Vertex*> vertices;
+	for (VehiclePathVertex v : path)
+		vertices.push_back(v.vertex);
+
+	highlightPath(gv, vertices);
+	highlightPoIs(gv, poiList);
 }
 
-void assignSchool(Vertex* school, vector<POI>& path, PathMatrix* matrix) {
-	int schoolID = school->getID();
-	int assignedSpot = path.size();
-	double distIncrease = matrix->getDist(path[path.size() - 1].getID(), schoolID);
+void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix, vector<Vehicle*> vehicles) {
+	VehiclePathCalculator* calc = new VehiclePathCalculator(poiList.getChildren(), poiList, matrix);
+	calc->calculate(vehicles);
 
-	for (int i = path.size() - 1; i >= 1; i--) {
-		if (path[i].getType() == POI::School && path[i].getVertex() == school)
-			return;
-		if (path[i].getType() == POI::Kid && path[i].getChild()->getSchool() == school)
-			break;
-		double oldDist = matrix->getDist(path[i - 1].getID(), path[i + 1].getID());
-		double newDist = matrix->getDist(path[i - 1].getID(), schoolID) + matrix->getDist(schoolID, path[i + 1].getID());
-		if (newDist - oldDist < distIncrease) {
-			assignedSpot = i;
-			distIncrease = newDist - oldDist;
-		}
-	}
-}
-
-void assignKids(vector<Child*>& kidsLeft, Vehicle* vehicle, Vertex* garage, PathMatrix* matrix) {
-	vector<POI> path;
-	path.push_back(POI(garage, POI::Garage));
-
-	for (int i = 0; i < kidsLeft.size() && i < vehicle->getCapacity(); i++) {
-		assignKid(kidsLeft[i], path, matrix);
-	}
-
-	for (Child* child : kidsLeft) {
-		assignSchool(child->getSchool(), path, matrix);
-	}
-
-	if (path[path.size() - 1].getType() == POI::Kid)
-		throw logic_error("AAAAAAAAAAAAAAAA");
-
-	vector<POI> returnPath;
-	returnPath.push_back(path[path.size() - 1]);
-
-	// FALTA ISTU aindaaaa
-
-	// e isto
-	// vehicle->assignPath(...);
-
-}
-
-void calculatePath(vector<Child*>& orderedKids, const PoIList& poiList, PathMatrix* matrix, const vector<Vehicle*>& vehicles) {
 	for (Vehicle* vehicle : vehicles) {
-		assignKids(orderedKids, vehicle, poiList.getGarage(), matrix);
-		orderedKids.erase(orderedKids.begin(), orderedKids.begin() + vehicle->getCapacity());
+		Menu::printHeader("Path to school");
+		displayVehiclePath(gv, poiList, vehicle->getPath());
+
+		cout << endl;
+		system("pause");
+		resetGraphColors(gv, graph->getVertexSet(), poiList);
+
+		Menu::printHeader("Path from school (Return)");
+		displayVehiclePath(gv, poiList, vehicle->getReturnPath());
+
+		cout << endl;
+		system("pause");
+		resetGraphColors(gv, graph->getVertexSet(), poiList);
 	}
 }
+
+
+
 
 void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 	Menu::printHeader("Test feature");
@@ -318,6 +301,7 @@ void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 
 	destroyGraphViewer(gv);
 }
+
 /******************************\
 |********* LOAD / SAVE ********|
 \******************************/
@@ -358,6 +342,7 @@ int main() {
 	   
 	cout << "Loading vehicles..." << endl;
 	vector<Vehicle*> vehicles = loadVehicles();
+	
 
 	while (true) {
 		int option;
@@ -371,9 +356,10 @@ int main() {
 		cout << " 7 - Update Graph Viewer PoIs" << endl;
 		cout << " 8 - Test feature" << endl;
 		cout << " 9 - Toggle node IDs" << endl;
-		cout << " 10 -Verify Articulation Points" << endl;
+		cout << " 10 - Verify Articulation Points" << endl;
+		cout << " 11 - Test feature 2" << endl;
 		cout << " 0 - Save and quit" << endl;
-		Menu::getInput<int>("Option: ", option, 0, 10);
+		Menu::getInput<int>("Option: ", option, 0, 11);
 
 		switch (option) {
 			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
@@ -385,7 +371,8 @@ int main() {
 			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
 			case 8: showPoIsOnly(poiList, matrix); break;
 			case 9: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
-			case 10: articulationPoints(gv ,graph, poiList.getIDs()); break;
+			case 10: articulationPoints(gv, graph, poiList.getIDs()); break;
+			case 11: pathCalculator(gv, graph, poiList, matrix, vehicles); break;
 			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 
 		}

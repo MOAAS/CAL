@@ -141,6 +141,7 @@
     <ClInclude Include="PoIList.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="Vehicle.h" />
+    <ClInclude Include="VehiclePathCalculator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="connection.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="PoIList.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Vehicle.cpp" />
+    <ClCompile Include="VehiclePathCalculator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

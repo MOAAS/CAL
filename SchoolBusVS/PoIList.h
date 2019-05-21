@@ -40,6 +40,7 @@ public:
 	PoIList(string fileName, const Graph* graph);
 	void save(string fileName);
 	Vertex* getGarage() const;
+	vector<Child*> getChildren() const;
 	void changeGarage(Vertex* garage);
 	void addHome(Child* child);
 	vector<int> getIDs() const;

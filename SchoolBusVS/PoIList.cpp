@@ -89,6 +89,15 @@ Vertex * PoIList::getGarage() const {
 	return garage;
 }
 
+vector<Child*> PoIList::getChildren() const {
+	vector<Child*> kids;
+	for (POI poi : pois) {
+		if (poi.getType() == POI::Kid)
+			kids.push_back(poi.getChild());
+	}
+	return kids;
+}
+
 void PoIList::changeGarage(Vertex * garage) {
 	for (size_t i = 0; i < pois.size(); i++) {
 		if (pois[i].getType() == POI::Garage) {
