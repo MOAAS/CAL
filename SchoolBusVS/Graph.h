@@ -76,7 +76,7 @@ public:
 	Edge* findEdge(int id) const;
 	bool addVertex(int ID, double x, double y);
 	bool addEdge(int edgeID, int srcID, int destID, double w);
-	int getNumVertex() const;
+	size_t getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
 	void BFS(Vertex* s);

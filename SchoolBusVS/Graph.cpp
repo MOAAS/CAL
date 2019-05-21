@@ -64,7 +64,7 @@ Vertex *Vertex::getPath() const {
 
 // -- Graph -- //
 
-int Graph::getNumVertex() const {
+size_t Graph::getNumVertex() const {
 	return vertexSet.size();
 }
 

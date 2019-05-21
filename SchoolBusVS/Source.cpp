@@ -290,7 +290,7 @@ int main() {
 		cout << " 8 - Test feature" << endl;
 		cout << " 9 - Toggle node IDs" << endl;
 		cout << " 0 - Save and quit" << endl;
-		Menu::getInput<int>("Option: ", option, 0, 8);
+		Menu::getInput<int>("Option: ", option, 0, 9);
 
 		switch (option) {
 			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
