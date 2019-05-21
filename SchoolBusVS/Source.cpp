@@ -236,6 +236,66 @@ void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 
 	destroyGraphViewer(gv);
 }
+
+/******************************\
+|******* CALCULATE ROUTE ******|
+\******************************/
+vector<POI> nearestInsertion(PoIList poiList, PathMatrix* matrix) {
+	vector<POI> pois = poiList.getPoIs();
+	vector<POI> poiRoute;
+	poiRoute.push_back(pois.front());
+	poiRoute.push_back(pois.at(1));
+
+	for (size_t i = 1; i < pois.size(); i++) {
+		size_t j;
+		int cost;
+		vector<POI>::iterator insertPosition;		
+		
+		switch (pois.at(i).getType()){
+			case POI::School:
+				cost = matrix->getDist(poiRoute.at(poiRoute.size() - 1).getID, pois.at(i).getID());
+				insertPosition = poiRoute.end();
+				for (j = poiRoute.size() - 2; j >= 0; j--) {
+					if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
+						cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
+						insertPosition = poiRoute.begin() + j + 1;
+					}
+					if (pois.at(j).getChild()->getSchool()->getID() == poiRoute.at(i).getID())
+						break;
+				}
+				break;
+			case POI::Kid:
+				cost = matrix->getDist(poiRoute.at(0).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(1).getID()) - matrix->getDist(poiRoute.at(0).getID(), poiRoute.at(1).getID());
+				insertPosition = poiRoute.begin() + 1;
+				for (j = 1; j < poiRoute.size(); j++) {
+					if (poiRoute.at(j).getID() == pois.at(i).getChild()->getSchool()->getID())
+						break;
+					if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
+						cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
+						insertPosition = poiRoute.begin() + j + 1;
+					}
+				}
+				if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()))
+					insertPosition = poiRoute.end();
+				break;
+			default:
+				break;
+		}
+		poiRoute.insert(insertPosition, pois.at(i));
+	}
+		
+	return poiRoute;
+}
+
+vector<Vertex *> calculateRoute(const vector<POI>& poiList, PathMatrix* matrix) {
+	Graph* graph = makeGraphFromPoIs(poiList, matrix);
+
+	vector<Vertex *> route = graph->calculatePrim();
+
+
+}
+
+
 /******************************\
 |********* LOAD / SAVE ********|
 \******************************/
