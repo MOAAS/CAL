@@ -301,16 +301,24 @@ void assignKids(vector<Child*>& kidsLeft, Vehicle* vehicle, Vertex* garage, Path
 }
 
 vector<Child *> orderKids(vector<POI> poiList, PathMatrix* matrix) {
+	vector<Child *> orderedKids;
+	vector<POI>::iterator it;
+	for (it = poiList.begin(); it != poiList.end(); it++) {
+		if (it->getType() == POI::School) {
+			poiList.erase(it);
+			it--;
+		}
+	}
 	Graph* graph = makeGraphFromPoIs(poiList, matrix);
 	vector<Vertex *> route = graph->calculatePrim();
-	vector<Child *> orderedKids;
 
 	for (size_t i = 0; i < route.size(); i++) {
-		for (size_t j = 0; j < poiList.size(); j++)
-			if (route.at(i)->getID == poiList.at(j).getID) {
-				if (poiList.at(j).getType == POI::Kid)
-					orderedKids.push_back(poiList.at(j).getChild());
-				poiList.erase(poiList.begin() + j);
+		for (it = poiList.begin(); it != poiList.end(); it++)
+			if (route.at(i)->getID() == it->getID()) {
+				if (it->getType() == POI::Kid)
+					orderedKids.push_back(it->getChild());
+				poiList.erase(it);
+				break;
 			}
 	}
 
@@ -336,37 +344,6 @@ void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 	destroyGraphViewer(gv);
 }
 
-/******************************\
-|******* NEAREST INSERTION ******|???????
-\******************************/
-
-//????
-vector<POI> nearestInsertion(PoIList poiList, PathMatrix* matrix) {
-	vector<POI> pois = poiList.getPoIs();
-	vector<POI> poiRoute;
-	poiRoute.push_back(pois.front());
-	poiRoute.push_back(pois.at(1));
-
-	for (size_t i = 1; i < pois.size(); i++) {
-		size_t j;
-		int cost = matrix->getDist(poiRoute.at(0).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(1).getID()) - matrix->getDist(poiRoute.at(0).getID(), poiRoute.at(1).getID());
-		vector<POI>::iterator insertPosition = poiRoute.begin() + 1;
-		for (j = 1; j < poiRoute.size(); j++) {
-			if (poiRoute.at(j).getID() == pois.at(i).getChild()->getSchool()->getID())
-				break;
-			if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID())) {
-				cost = matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()) + matrix->getDist(pois.at(i).getID(), poiRoute.at(j + 1).getID) - matrix->getDist(poiRoute.at(j).getID(), poiRoute.at(j + 1).getID());
-				insertPosition = poiRoute.begin() + j + 1;
-			}
-		}
-		if (cost > matrix->getDist(poiRoute.at(j).getID(), pois.at(i).getID()))
-			insertPosition = poiRoute.end();
-
-		poiRoute.insert(insertPosition, pois.at(i));
-	}
-	return poiRoute;
-}
-// ?????
 
 /******************************\
 |********* LOAD / SAVE ********|
@@ -401,7 +378,7 @@ int main() {
 
 	cout << "Pre-processing..." << endl;
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
-
+	
 	cout << "Opening Graph Viewer..." << endl;
 	GraphViewer *gv = createGraphViewer(graph, false);
 	highlightPoIs(gv, poiList);
