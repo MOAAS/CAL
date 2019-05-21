@@ -34,15 +34,16 @@ class PoIList
 {
 	vector<POI> pois;
 	Vertex* garage;
-	bool existsSchool(Vertex* school);
+	bool existsSchool(Vertex* school) const;
 public:
 	PoIList(Vertex* garage);
 	PoIList(string fileName, const Graph* graph);
 	void save(string fileName);
-	Vertex* getGarage();
+	Vertex* getGarage() const;
 	void changeGarage(Vertex* garage);
 	void addHome(Child* child);
 	vector<int> getIDs() const;
 	vector<POI> getPoIs() const;
+	vector<Vertex*> getVertexes() const;
 };
 

@@ -76,10 +76,11 @@ public:
 	Edge* findEdge(int id) const;
 	bool addVertex(int ID, double x, double y);
 	bool addEdge(int edgeID, int srcID, int destID, double w);
-	int getNumVertex() const;
+	size_t getNumVertex() const;
 	vector<Vertex *> getVertexSet() const;
 
 	void BFS(Vertex* s);
+	void BFS(Vertex* s, Vertex* removed);
 	void transpose(Graph* transposed);
 	PathMatrix* multipleDijkstra(const vector<int>& POIids);
 	void dijkstraShortestPath(int sourceID);
@@ -88,6 +89,8 @@ public:
 
 	vector<Vertex*> calculatePrim();
 	bool stronglyConnected();
+	bool verifyConnectivity(const vector<int>& POIids, Vertex* removed);
+	vector<Vertex *> articulationPoints(const vector<int>& POIids);
 
 };
 

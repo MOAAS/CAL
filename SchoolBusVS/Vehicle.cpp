@@ -24,3 +24,8 @@ vector<Vertex*> Vehicle::getReturnPath() const
 {
 	return returnPath;
 }
+
+void Vehicle::assignPath(const vector<Vertex*>& path, const vector<Vertex*>& returnPath) {
+	this->path = path;
+	this->returnPath = returnPath;
+}
