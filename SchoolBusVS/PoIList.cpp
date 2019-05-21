@@ -47,7 +47,7 @@ int POI::getID() const {
 /************* List **************/
 
 
-bool PoIList::existsSchool(Vertex* school) {
+bool PoIList::existsSchool(Vertex* school) const {
 	for (auto poi : this->pois) {
 		if (poi.getType() == POI::School && poi.getVertex()->getID() == school->getID())
 			return true;
@@ -85,7 +85,7 @@ void PoIList::save(string fileName) {
 
 }
 
-Vertex * PoIList::getGarage() {
+Vertex * PoIList::getGarage() const {
 	return garage;
 }
 

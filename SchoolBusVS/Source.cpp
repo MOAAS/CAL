@@ -163,8 +163,10 @@ void addKid(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix)
 		cout << "Couldn't find home ID." << endl;
 	else if (school == NULL)
 		cout << "Couldn't find school ID." << endl;
-	else if (input == "Y")
+	else if (input == "Y") {
 		poiList.addHome(new Child(home, school));
+		// é preciso atualizar a pathmatrix
+	}
 	else cout << "Succesfully cancelled operation" << endl;
 }
 
@@ -218,6 +220,8 @@ void verifyStronglyConnected(Graph* graph) {
 		Menu::displayColored("Graph is strongly connected", MENU_LIGHTGREEN);
 	else Menu::displayColored("Graph is not strongly connected", MENU_LIGHTRED);
 }
+
+
 Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	Graph* graph = new Graph();
 
@@ -235,6 +239,72 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	}
 	
 	return graph;
+}
+
+void assignKid(Child* child, vector<POI>& path, PathMatrix* matrix) {
+	int homeID = child->getHome()->getID();
+	size_t assignedSpot = path.size();
+	double distIncrease = matrix->getDist(path[path.size() - 1].getID(), homeID);
+	for (int i = assignedSpot - 1; i >= 1; i--) {
+		double oldDist = matrix->getDist(path[i - 1].getID(), path[i + 1].getID());
+		double newDist = matrix->getDist(path[i - 1].getID(), homeID) + matrix->getDist(homeID, path[i + 1].getID());
+		if (newDist - oldDist < distIncrease) {
+			assignedSpot = i;
+			distIncrease = newDist - oldDist;
+		}
+	}
+	path.insert(path.begin() + assignedSpot, POI(child));
+}
+
+void assignSchool(Vertex* school, vector<POI>& path, PathMatrix* matrix) {
+	int schoolID = school->getID();
+	int assignedSpot = path.size();
+	double distIncrease = matrix->getDist(path[path.size() - 1].getID(), schoolID);
+
+	for (int i = path.size() - 1; i >= 1; i--) {
+		if (path[i].getType() == POI::School && path[i].getVertex() == school)
+			return;
+		if (path[i].getType() == POI::Kid && path[i].getChild()->getSchool() == school)
+			break;
+		double oldDist = matrix->getDist(path[i - 1].getID(), path[i + 1].getID());
+		double newDist = matrix->getDist(path[i - 1].getID(), schoolID) + matrix->getDist(schoolID, path[i + 1].getID());
+		if (newDist - oldDist < distIncrease) {
+			assignedSpot = i;
+			distIncrease = newDist - oldDist;
+		}
+	}
+}
+
+void assignKids(vector<Child*>& kidsLeft, Vehicle* vehicle, Vertex* garage, PathMatrix* matrix) {
+	vector<POI> path;
+	path.push_back(POI(garage, POI::Garage));
+
+	for (int i = 0; i < kidsLeft.size() && i < vehicle->getCapacity(); i++) {
+		assignKid(kidsLeft[i], path, matrix);
+	}
+
+	for (Child* child : kidsLeft) {
+		assignSchool(child->getSchool(), path, matrix);
+	}
+
+	if (path[path.size() - 1].getType() == POI::Kid)
+		throw logic_error("AAAAAAAAAAAAAAAA");
+
+	vector<POI> returnPath;
+	returnPath.push_back(path[path.size() - 1]);
+
+	// FALTA ISTU aindaaaa
+
+	// e isto
+	// vehicle->assignPath(...);
+
+}
+
+void calculatePath(vector<Child*>& orderedKids, const PoIList& poiList, PathMatrix* matrix, const vector<Vehicle*>& vehicles) {
+	for (Vehicle* vehicle : vehicles) {
+		assignKids(orderedKids, vehicle, poiList.getGarage(), matrix);
+		orderedKids.erase(orderedKids.begin(), orderedKids.begin() + vehicle->getCapacity());
+	}
 }
 
 void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {

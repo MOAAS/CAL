@@ -18,5 +18,7 @@ public:
 	vector<Child*> getChildren() const;
 	vector<Vertex*> getPath() const;
 	vector<Vertex*> getReturnPath() const;
+
+	void assignPath(const vector<Vertex*>& path, const vector<Vertex*>& returnPath);
 };
 
