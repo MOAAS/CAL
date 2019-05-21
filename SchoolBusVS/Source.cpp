@@ -29,6 +29,7 @@ GraphViewer* createGraphViewer(const Graph* graph, bool enableWeights) {
 	gv->defineEdgeCurved(false);
 	for (Vertex* vertex : graph->getVertexSet()) {
 		gv->addNode(vertex->getID(), (int)vertex->getX() - 527500, (int)vertex->getY() - 4555555);
+		//gv->addNode(vertex->getID(), (int)vertex->getX(), (int)vertex->getY());
 	}
 
 	for (Vertex* vertex : graph->getVertexSet()) {
@@ -200,11 +201,22 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
 }
 
+void articulationPoints(GraphViewer* gv , Graph* graph, const vector<int>& ids) {
+	Menu::printHeader("Articulation Points");
+	vector<Vertex *> articulationPoints = graph->articulationPoints(ids);
+	if (articulationPoints.size() > 0) {
+		Menu::displayColored("There are articulation Points between PoIs", MENU_LIGHTRED) << endl;
+		for(Vertex * v : articulationPoints)
+			gv->setVertexColor(v->getID(), RED);
+	}
+	else Menu::displayColored("There are no articulation Points between PoIs", MENU_LIGHTGREEN) << endl;
+}
+
 void verifyStronglyConnected(Graph* graph) {
 	Menu::printHeader("Graph strongly connected check");
 	if(graph->stronglyConnected())
-		Menu::printHeader("Graph is strongly connected");
-	else Menu::printHeader("Graph is not strongly connected");
+		Menu::displayColored("Graph is strongly connected", MENU_LIGHTGREEN);
+	else Menu::displayColored("Graph is not strongly connected", MENU_LIGHTRED);
 }
 Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	Graph* graph = new Graph();
@@ -289,8 +301,9 @@ int main() {
 		cout << " 7 - Update Graph Viewer PoIs" << endl;
 		cout << " 8 - Test feature" << endl;
 		cout << " 9 - Toggle node IDs" << endl;
+		cout << " 10 -Verify Articulation Points" << endl;
 		cout << " 0 - Save and quit" << endl;
-		Menu::getInput<int>("Option: ", option, 0, 9);
+		Menu::getInput<int>("Option: ", option, 0, 10);
 
 		switch (option) {
 			case 1: shortestPathOption(gv, graph, poiList, matrix); break;
@@ -302,6 +315,7 @@ int main() {
 			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
 			case 8: showPoIsOnly(poiList, matrix); break;
 			case 9: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
+			case 10: articulationPoints(gv ,graph, poiList.getIDs()); break;
 			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 
 		}

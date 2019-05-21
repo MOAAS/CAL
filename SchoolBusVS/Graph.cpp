@@ -150,6 +150,47 @@ void Graph::BFS(Vertex* s)
 	}
 }
 
+/*** Breadth First Search (ignores one vertex)***/
+
+void Graph::BFS(Vertex* s, Vertex* removed)
+{
+	// Mark all the vertices as not visited 
+	for (auto v : vertexSet) {
+		v->visited = false; // known(v) in slides	
+	}
+
+	// Create a queue for BFS 
+	list<Vertex*> queue;
+
+	// Mark the current node as visited and enqueue it 
+	s->visited = true;
+	queue.push_back(s);
+
+	// 'i' will be used to get all adjacent 
+	// vertices of a vertex 
+	list<int>::iterator i;
+
+	while (!queue.empty())
+	{
+		// Dequeue a vertex from queue
+		s = queue.front();
+		queue.pop_front();
+
+		// Get all adjacent vertices of the dequeued 
+		// vertex s. If a adjacent has not been visited,  
+		// then mark it visited and enqueue it 
+		for (auto edge : s->adj)
+		{
+
+			if (!(edge->dest->visited) && edge->dest != removed) //!
+			{
+				edge->dest->visited = true;
+				queue.push_back(edge->dest);
+			}
+		}
+	}
+}
+
 /*** Transpose Graph***/
 void Graph::transpose(Graph* transposed) {
 	for (Vertex* vertex : vertexSet)
@@ -277,4 +318,31 @@ bool Graph::stronglyConnected() {
 	}
 
 	return true;
+}
+
+
+/***** Connected between points of interest (ignoring a vertex) ****/
+
+bool Graph::verifyConnectivity(const vector<int>& POIids,Vertex* removed) {
+	for (int id : POIids)
+		if (id == removed->getID())
+			return true;
+	BFS(findVertex(POIids[0]),removed);
+	for (int id : POIids) {
+		if (findVertex(id)->visited == false)
+			return false;
+	}
+	return true;
+}
+
+/***** Articulation Points (between PoI) ****/
+vector<Vertex *> Graph::articulationPoints(const vector<int>& POIids) {
+	vector<Vertex *> articulationPoints;
+	if (POIids.size() == 0)
+		return articulationPoints;
+	for (auto v : vertexSet){
+		if (!verifyConnectivity(POIids, v))
+			articulationPoints.push_back(v);
+	}
+	return articulationPoints;
 }
