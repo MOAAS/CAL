@@ -385,7 +385,7 @@ vector<Child *> orderKids(vector<POI> poiList, PathMatrix* matrix) {
 		}
 	}
 	Graph* graph = makeGraphFromPoIs(poiList, matrix);
-	vector<Vertex *> route = graph->calculatePrim();
+	vector<Vertex*> route = graph->calculatePrim();
 
 	for (size_t i = 0; i < route.size(); i++) {
 		for (it = poiList.begin(); it != poiList.end(); it++)
@@ -399,6 +399,34 @@ vector<Child *> orderKids(vector<POI> poiList, PathMatrix* matrix) {
 
 	return orderedKids;
 }
+
+// 
+vector<Vehicle*> vehicles(int kidsLeft, vector<Vehicle*> vehicles) {
+	vector<Vehicle*> v;
+	vector<Vehicle*>::iterator it = vehicles.begin();
+
+	while (kidsLeft > 0 && vehicles.size() != 0) {
+		if (kidsLeft >= (*it)->getCapacity()) {
+			kidsLeft -= (*it)->getCapacity();
+			v.push_back(*it);
+			vehicles.erase(it);
+			it = vehicles.begin();
+		}
+		else {
+			it++;
+			if (it == vehicles.end() || kidsLeft > (*it)->getCapacity()) {
+				it--;
+				kidsLeft -= (*it)->getCapacity();
+				v.push_back(*it);
+				vehicles.erase(it);
+			}
+		}
+	}
+
+	return v;
+}
+
+
 
 void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
 	Menu::printHeader("Test feature");
