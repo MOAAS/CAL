@@ -14,6 +14,14 @@ VehiclePathCalculator::VehiclePathCalculator(const vector<Child*>& orderedKids, 
 }
 
 
+static double getDistIncrease(PathMatrix* matrix, vector<POI> path, int assignedSpot, int newID) {
+	if (assignedSpot == 0)
+		return matrix->getDist(newID, path[0].getID());
+	if (assignedSpot == path.size())
+		return matrix->getDist(path[path.size() - 1].getID(), newID);
+	return matrix->getDist(path[assignedSpot - 1].getID(), newID) + matrix->getDist(newID, path[assignedSpot].getID()) - matrix->getDist(path[assignedSpot - 1].getID(), path[assignedSpot].getID());
+}
+
 void VehiclePathCalculator::assignKidGo(Child* child, vector<POI>& path, PathMatrix* matrix) {
 	if (path.size() == 1) {
 		path.insert(path.begin() + 1, POI(child));
@@ -22,14 +30,13 @@ void VehiclePathCalculator::assignKidGo(Child* child, vector<POI>& path, PathMat
 
 	int homeID = child->getHome()->getID();
 	int assignedSpot = 1;
-	double distIncrease = matrix->getDist(path[0].getID(), homeID) + matrix->getDist(homeID, path[1].getID()) - matrix->getDist(path[0].getID(), path[1].getID());
+	double distIncrease = getDistIncrease(matrix, path, assignedSpot, homeID);
 
 	for (int i = 2; i < (int)path.size(); i++) {
-		double oldDist = matrix->getDist(path[i - 1].getID(), path[i].getID());
-		double newDist = matrix->getDist(path[i - 1].getID(), homeID) + matrix->getDist(homeID, path[i].getID());
-		if (newDist - oldDist < distIncrease) {
+		double newDistIncrease = getDistIncrease(matrix, path, i, homeID);
+		if (newDistIncrease < distIncrease) {
 			assignedSpot = i;
-			distIncrease = newDist - oldDist;
+			distIncrease = newDistIncrease;
 		}
 		if (path[i].getType() == POI::School && path[i].getVertex() == child->getSchool()) {
 			path.insert(path.begin() + assignedSpot, POI(child));
@@ -50,35 +57,34 @@ void VehiclePathCalculator::assignSchoolGo(Vertex* school, vector<POI>& path, Pa
 
 	int schoolID = school->getID();
 	int assignedSpot = path.size();
-	double distIncrease = matrix->getDist(path[path.size() - 1].getID(), schoolID);
+	double distIncrease = getDistIncrease(matrix, path, assignedSpot, schoolID);
 
 	for (int i = path.size() - 1; i >= 1; i--) {
 		if (path[i].getType() == POI::Kid && path[i].getChild()->getSchool() == school)
 			break;
-		double oldDist = matrix->getDist(path[i - 1].getID(), path[i].getID());
-		double newDist = matrix->getDist(path[i - 1].getID(), schoolID) + matrix->getDist(schoolID, path[i].getID());
-		if (newDist - oldDist < distIncrease) {
+		double newDistIncrease = getDistIncrease(matrix, path, i, schoolID);
+		if (newDistIncrease < distIncrease) {
 			assignedSpot = i;
-			distIncrease = newDist - oldDist;
+			distIncrease = newDistIncrease;
 		}
 	}
 
 	path.insert(path.begin() + assignedSpot, POI(school, POI::School));
 }
 
+
 void VehiclePathCalculator::assignKidReturn(Child* child, vector<POI>& returnPath, PathMatrix* matrix) {
 	int homeID = child->getHome()->getID();
-	int assignedSpot = returnPath.size();
-	double distIncrease = matrix->getDist(returnPath[returnPath.size() - 1].getID(), homeID);
+	int assignedSpot = returnPath.size() - 1;
+	double distIncrease = getDistIncrease(matrix, returnPath, assignedSpot, homeID);
 
 	for (int i = assignedSpot - 1; i >= 1; i--) {
 		if (returnPath[i].getType() == POI::School && returnPath[i].getVertex() == child->getSchool())
 			break;
-		double oldDist = matrix->getDist(returnPath[i - 1].getID(), returnPath[i].getID());
-		double newDist = matrix->getDist(returnPath[i - 1].getID(), homeID) + matrix->getDist(homeID, returnPath[i].getID());
-		if (newDist - oldDist < distIncrease) {
+		double newDistIncrease = getDistIncrease(matrix, returnPath, i, homeID);
+		if (newDistIncrease < distIncrease) {
 			assignedSpot = i;
-			distIncrease = newDist - oldDist;
+			distIncrease = newDistIncrease;
 		}
 	}
 	returnPath.insert(returnPath.begin() + assignedSpot, POI(child));
@@ -96,24 +102,19 @@ void VehiclePathCalculator::assignSchoolReturn(Vertex* school, vector<POI>& retu
 
 	int schoolID = school->getID();
 	int assignedSpot = 1;
-	double distIncrease = matrix->getDist(returnPath[0].getID(), schoolID) + matrix->getDist(schoolID, returnPath[1].getID()) - matrix->getDist(returnPath[0].getID(), returnPath[1].getID());
+	double distIncrease = getDistIncrease(matrix, returnPath, assignedSpot, schoolID);
 
 	for (int i = 2; i < (int)returnPath.size(); i++) {
-		double oldDist = matrix->getDist(returnPath[i - 1].getID(), returnPath[i].getID());
-		double newDist = matrix->getDist(returnPath[i - 1].getID(), schoolID) + matrix->getDist(schoolID, returnPath[i].getID());
-		if (newDist - oldDist < distIncrease) {
+		double newDistIncrease = getDistIncrease(matrix, returnPath, i, schoolID);
+		if (newDistIncrease < distIncrease) {
 			assignedSpot = i;
-			distIncrease = newDist - oldDist;
+			distIncrease = newDistIncrease;
 		}
 		if (returnPath[i].getType() == POI::Kid && returnPath[i].getChild()->getSchool() == school) {
 			returnPath.insert(returnPath.begin() + assignedSpot, POI(school, POI::School));
 			return;
 		}
 	}
-
-	if (matrix->getDist(returnPath[returnPath.size() - 1].getID(), schoolID) < distIncrease)
-		assignedSpot = returnPath.size();
-
 
 	returnPath.insert(returnPath.begin() + assignedSpot, POI(school, POI::School));
 }
@@ -128,28 +129,16 @@ void VehiclePathCalculator::assignKids(vector<Child*>& kidsLeft, Vehicle* vehicl
 		assignSchoolGo(kidsLeft[i]->getSchool(), path, matrix);
 	}
 
-	//for (Child* child : kidsLeft) {
-	//	assignSchoolGo(child->getSchool(), path, matrix);
-	//}
-
-	if (path[path.size() - 1].getType() == POI::Kid)
-		cout << "AAAAAAAAAAAAAAAAAAAAAA" << endl;
-
 	// Make return path
 	vector<POI> returnPath;
 	returnPath.push_back(path[path.size() - 1]);
+	returnPath.push_back(POI(garage, POI::Garage));
 
 	for (int i = 0; i < (int)kidsLeft.size() && i < vehicle->getCapacity(); i++) {
-		assignKidReturn(kidsLeft[i], returnPath, matrix);
 		assignSchoolReturn(kidsLeft[i]->getSchool(), returnPath, matrix);
-
+		assignKidReturn(kidsLeft[i], returnPath, matrix);
 	}
 
-	//for (Child* child : kidsLeft) {
-	//	assignSchoolReturn(child->getSchool(), returnPath, matrix);
-	//}
-
-	returnPath.push_back(POI(garage, POI::Garage));
 
 	// Make vehicle path
 	vector<VehiclePathVertex> fullPath, fullReturnPath;
