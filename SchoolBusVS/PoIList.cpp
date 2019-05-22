@@ -128,8 +128,9 @@ vector<POI> PoIList::getPoIs() const {
 	return pois;
 }
 
-vector<Vertex*> PoIList::getVertexes() const {
+vector<Vertex*> PoIList::getVertices() const {
 	vector<Vertex*> vertexList;
 	for (POI poi : pois)
 		vertexList.push_back(poi.getVertex());
+	return vertexList;
 }

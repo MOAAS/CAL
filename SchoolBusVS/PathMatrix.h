@@ -18,5 +18,7 @@ public:
 	vector<Vertex*> getPath(int srcID, int destID);
 
 	void setPath(int srcID, int destID, double dist, const vector<Vertex*>& path);
+
+	int getNumMissingPaths(const vector<int>& ids, bool enableLog);
 };
 

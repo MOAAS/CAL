@@ -78,7 +78,7 @@ void toggleNodeIDs(GraphViewer* gv, const Graph* graph, const vector<int>& poiID
 
 void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
 	for (int i = 0; i < (int)path.size() - 1; i++) {
-		gv->setVertexColor(path[i]->getID(), YELLOW);
+		gv->setVertexColor(path[i]->getID(), CYAN);
 		for (Edge* e : path[i]->getAdj()) {
 			if (e->getDest() == path[i + 1]) {
 				gv->setEdgeColor(e->getID(), RED);
@@ -88,10 +88,10 @@ void highlightPath(GraphViewer* gv, const vector<Vertex*>& path) {
 	}
 	if (path.size() == 0)
 		return;
-	gv->setVertexColor(path[0]->getID(), GREEN);
+	gv->setVertexColor(path[0]->getID(), WHITE);
 	if (path.size() == 1)
 		return;
-	gv->setVertexColor(path[path.size() - 1]->getID(), RED);
+	gv->setVertexColor(path[path.size() - 1]->getID(), BLACK);
 	gv->rearrange();
 }
 
@@ -99,8 +99,8 @@ void highlightPoIs(GraphViewer* gv, const PoIList& pois) {
 	for (POI poi : pois.getPoIs()) {
 		switch (poi.getType()) {
 		case POI::Garage: gv->setVertexColor(poi.getID(), LIGHT_GRAY); break;
-		case POI::School: gv->setVertexColor(poi.getID(), WHITE); break;
-		case POI::Kid: gv->setVertexColor(poi.getID(), ORANGE); break;
+		case POI::School: gv->setVertexColor(poi.getID(), RED); break;
+		case POI::Kid: gv->setVertexColor(poi.getID(), GREEN); break;
 		}
 	}
 	gv->rearrange();
@@ -147,7 +147,7 @@ void addVehicle(vector<Vehicle*>& vehicles) {
 	int capacity;
 	string input;
 	Menu::printHeader("Add vehicle");
-	Menu::getInput<int>("Vehicle capacity: ", capacity);
+	Menu::getInput<int>("Vehicle capacity (Max. 100): ", capacity, 1, 100);
 	Menu::getLineInput_CI("Do you really wish to add a capacity " + to_string(capacity) + " vehicle? (Y / N) ", input, { "Y","N" });
 	if (input == "Y")
 		vehicles.push_back(new Vehicle(capacity));
@@ -169,7 +169,8 @@ void addKid(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix)
 		cout << "Couldn't find school ID." << endl;
 	else if (input == "Y") {
 		poiList.addHome(new Child(home, school));
-		// � preciso atualizar a pathmatrix
+		*matrix = *graph->multipleDijkstra(poiList.getIDs());
+		highlightPoIs(gv, poiList);
 	}
 	else cout << "Succesfully cancelled operation" << endl;
 }
@@ -191,15 +192,7 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	Menu::printHeader("Connectivity check");
 	Menu::displayColored("Checking connectivity for the following PoIs: ", MENU_WHITE);
 	printVector::ofValues(cout, ids, " ") << endl;
-	int missingPaths = 0;
-	for (size_t i = 0; i < ids.size(); i++) {
-		for (size_t j = 0; j < ids.size(); j++) {
-			if (matrix->getDist(ids[i], ids[j]) == INF) {
-				cout << "There is no path from " << ids[i] << " to " << ids[j] << endl;
-				missingPaths++;
-			}
-		}
-	}
+	int missingPaths = matrix->getNumMissingPaths(ids, true);
 	if (missingPaths == 0)
 		Menu::displayColored("There are paths between every pair of PoIs", MENU_LIGHTGREEN) << endl;
 	else if (missingPaths == 1)
@@ -207,22 +200,25 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 	else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
 }
 
-void articulationPoints(GraphViewer* gv, Graph* graph, const vector<int>& ids) {
+void articulationPoints(GraphViewer* gv, Graph* graph, const PoIList poiList) {
 	Menu::printHeader("Articulation Points");
-	vector<Vertex *> articulationPoints = graph->articulationPoints(ids);
+	vector<Vertex *> articulationPoints = graph->articulationPoints(poiList.getIDs());
 	if (articulationPoints.size() > 0) {
 		Menu::displayColored("There are articulation Points between PoIs", MENU_LIGHTRED) << endl;
 		for (Vertex * v : articulationPoints)
-			gv->setVertexColor(v->getID(), RED);
+			gv->setVertexColor(v->getID(), ORANGE);
 	}
 	else Menu::displayColored("There are no articulation Points between PoIs", MENU_LIGHTGREEN) << endl;
+	gv->rearrange();
+	Menu::getLineInput_CI("Do you wish to go back to the main menu? (Y to leave) ", *(new string), { "Y" });	
+	resetGraphColors(gv, graph->getVertexSet(), poiList);
 }
 
 void verifyStronglyConnected(Graph* graph) {
 	Menu::printHeader("Graph strongly connected check");
 	if (graph->stronglyConnected())
-		Menu::displayColored("Graph is strongly connected", MENU_LIGHTGREEN);
-	else Menu::displayColored("Graph is not strongly connected", MENU_LIGHTRED);
+		Menu::displayColored("Graph is strongly connected", MENU_LIGHTGREEN) << endl;
+	else Menu::displayColored("Graph is not strongly connected", MENU_LIGHTRED) << endl;
 }
 
 
@@ -245,7 +241,7 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	return graph;
 }
 
-void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehiclePathVertex>& path) {
+void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehiclePathVertex>& path, double dist) {
 	for (VehiclePathVertex v : path) {
 		if (!v.isPoI) {
 			Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_CYAN);
@@ -258,6 +254,9 @@ void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehicleP
 		}
 	}
 
+	cout << endl;
+	Menu::displayColored("Total distance: " + to_string(dist), MENU_WHITE) << endl;
+
 	vector<Vertex*> vertices;
 	for (VehiclePathVertex v : path)
 		vertices.push_back(v.vertex);
@@ -266,110 +265,95 @@ void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehicleP
 	highlightPoIs(gv, poiList);
 }
 
-enum Direction {
-	North = 0,
-	South = 4,
-	East = 6,
-	West = 2,
-	Northeast = 7,
-	Northwest = 1,
-	Southeast = 5,
-	Southwest = 3,
-	Undefined = -1
-};
-
-void logVehiclePath(const Vehicle* vehicle) {
-	ofstream f1("../Files/vehicle" + to_string(vehicle->getID()) + "Go.txt");
-	ofstream f2("../Files/vehicle" + to_string(vehicle->getID()) + "Return.txt");
-	vector<VehiclePathVertex> path = vehicle->getPath();
-	vector<VehiclePathVertex> returnPath = vehicle->getReturnPath();
-	f1 << "Path" << endl;
-	f1 << "Start at ID: " << path[0].vertex->getID() << endl;
-	for (int i = 1; i < path.size(); i++) {
+void logVehiclePath(ofstream& file, const vector<VehiclePathVertex>& path, string title, double totalDist) {
+	file << title << endl;
+	file << "Start at ID: " << path[0].vertex->getID() << endl;
+	for (size_t i = 1; i < path.size(); i++) {
 		double x1 = path[i - 1].vertex->getX();
 		double y1 = path[i - 1].vertex->getY();
 
 		double x2 = path[i].vertex->getX();
 		double y2 = path[i].vertex->getY();
 
-		double angle = atan2(y2 - y1, x2 - x1);
-		angle += 3.14159265358979323846;
-		angle /= 3.14159265358979323846 / 4;
-		int halfQuarter = (int)angle;
-		Direction dir = (Direction)(halfQuarter % 8);
-
+		double M_2PI = 2 * 3.14159265358979323846;
 		double dist = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 
-		switch (dir) {
-		case North: f1 << "Go North "; break;
-		case South: f1 << "Go South "; break;
-		case East: f1 << "Go East "; break;
-		case West: f1 << "Go West "; break;
-		case Northeast: f1 << "Go Northeast "; break;
-		case Northwest: f1 << "Go Northwest "; break;
-		case Southeast: f1 << "Go Southeast "; break;
-		case Southwest: f1 << "Go Southwest "; break;
-		}
-
-		f1 << dist << " meters, to " << path[i].vertex->getID() << endl;
-	}
-
-	f1 << "End at ID: " << path[path.size() - 1].vertex->getID() << endl;
-
-	f2 << "Return Path" << endl;
-	f2 << "Start at ID: " << path[0].vertex->getID() << endl;
-	for (int i = 1; i < path.size(); i++) {
-		double x1 = path[i - 1].vertex->getX();
-		double y1 = path[i - 1].vertex->getY();
-
-		double x2 = path[i].vertex->getX();
-		double y2 = path[i].vertex->getY();
-
 		double angle = atan2(y2 - y1, x2 - x1);
-		angle += 3.14159265358979323846;
-		angle /= 3.14159265358979323846 / 4;
-		int halfQuarter = (int)angle;
-		Direction dir = (Direction)(halfQuarter % 8);
+		int octant = lround(8 * angle / M_2PI + 8) % 8;
 
-		double dist = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
-
-		switch (dir) {
-		case North: f2 << "Go North "; break;
-		case South: f2 << "Go South "; break;
-		case East: f2 << "Go East "; break;
-		case West: f2 << "Go West "; break;
-		case Northeast: f2 << "Go Northeast "; break;
-		case Northwest: f2 << "Go Northwest "; break;
-		case Southeast: f2 << "Go Southeast "; break;
-		case Southwest: f2 << "Go Southwest "; break;
+		switch (octant) {
+			case 0: file << "Go East "; break;
+			case 2: file << "Go South "; break;
+			case 4: file << "Go West "; break;
+			case 6: file << "Go North "; break;
+			case 1: file << "Go Southeast "; break;
+			case 3: file << "Go Southwest "; break;
+			case 5: file << "Go Northwest "; break;
+			case 7: file << "Go Northeast "; break;
 		}
 
-		f2 << dist << " meters, to " << path[i].vertex->getID() << endl;
+		file << dist << " meters, to " << path[i].vertex->getID() << endl;
 	}
 
-	f2 << "End at ID: " << path[path.size() - 1].vertex->getID() << endl;
+	file << "End at ID: " << path[path.size() - 1].vertex->getID() << endl;
+	file << "Total distance: " << totalDist << " meters." << endl;
 }
+
 void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix, vector<Vehicle*> vehicles) {
+	Menu::printHeader("Route Calculator");
+
+	int missingPaths = matrix->getNumMissingPaths(poiList.getIDs(), false);
+	if (missingPaths > 0) {
+		if (missingPaths == 1)
+			Menu::displayColored("There is a path missing between two PoIs", MENU_LIGHTRED) << endl;
+		else Menu::displayColored("There are " + to_string(missingPaths) + " paths missing.", MENU_LIGHTRED) << endl;
+		return;
+	}
+
 	VehiclePathCalculator* calc = new VehiclePathCalculator(poiList.getChildren(), poiList, matrix);
 	calc->calculate(vehicles);
 
+	int numChildren = poiList.getChildren().size();
+	int totalCapacity = 0;
+	for (Vehicle* vehicle : vehicles)
+		totalCapacity += vehicle->getCapacity();
+	
+	if (numChildren > totalCapacity) {
+		Menu::displayColored("Not enough vehicle space!", MENU_LIGHTRED) << endl;
+		Menu::displayColored(to_string(numChildren) + " Kids VS " + to_string(totalCapacity) + " bus slots!", MENU_LIGHTRED) << endl;
+		return;
+	}
+	
 	for (Vehicle* vehicle : vehicles) {
 		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()), '-');
+		double distPath = vehicle->getPathDist();
+		double distReturn = vehicle->getReturnDist();
+		// Path
 		Menu::printHeader("Path to school");
-		displayVehiclePath(gv, poiList, vehicle->getPath());
-
-		cout << endl;
+		displayVehiclePath(gv, poiList, vehicle->getPath(), distPath);
 		system("pause");
 		resetGraphColors(gv, graph->getVertexSet(), poiList);
 
+		// Return
 		Menu::printHeader("Path from school (Return)");
-		displayVehiclePath(gv, poiList, vehicle->getReturnPath());
-
-		cout << endl;
+		displayVehiclePath(gv, poiList, vehicle->getReturnPath(), distReturn);		
 		system("pause");
 		resetGraphColors(gv, graph->getVertexSet(), poiList);
 
-		logVehiclePath(vehicle);
+
+		// Saving
+		ofstream f1("../Files/vehicle" + to_string(vehicle->getID()) + "Go.txt");
+		ofstream f2("../Files/vehicle" + to_string(vehicle->getID()) + "Return.txt");
+
+		cout << "Saving path to ../Files/vehicle" << vehicle->getID() << "Go.txt...";
+		logVehiclePath(f1, vehicle->getPath(), "Path", distPath);
+		cout << "Done." << endl;
+
+		cout << "Saving return path to ../Files/vehicle" << vehicle->getID() << "Return.txt... ";
+		logVehiclePath(f2, vehicle->getReturnPath(), "Return Path", distReturn);
+		cout << "Done." << endl;
+
+
 	}
 }
 
@@ -467,7 +451,7 @@ int main() {
 		cout << " 7 - Update Graph Viewer PoIs" << endl;
 		cout << " 8 - Toggle node IDs" << endl;
 		cout << " 9 - Verify Articulation Points" << endl;
-		cout << " 10 - Calculate Path" << endl;
+		cout << " 10 - Calculate Bus Route" << endl;
 		cout << " 0 - Save and quit" << endl;
 		Menu::getInput<int>("Option: ", option, 0, 11);
 
@@ -480,7 +464,7 @@ int main() {
 			case 6:	verifyStronglyConnected(graph); break;
 			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
 			case 8: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
-			case 9: articulationPoints(gv, graph, poiList.getIDs()); break;
+			case 9: articulationPoints(gv, graph, poiList); break;
 			case 10: pathCalculator(gv, graph, poiList, matrix, vehicles); break;
 			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 
