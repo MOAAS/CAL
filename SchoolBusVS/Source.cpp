@@ -266,11 +266,95 @@ void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehicleP
 	highlightPoIs(gv, poiList);
 }
 
+enum Direction {
+	North = 0,
+	South = 4,
+	East = 6,
+	West = 2,
+	Northeast = 7,
+	Northwest = 1,
+	Southeast = 5,
+	Southwest = 3,
+	Undefined = -1
+};
+
+void logVehiclePath(const Vehicle* vehicle) {
+	ofstream f1("../Files/vehicle" + to_string(vehicle->getID()) + "Go.txt");
+	ofstream f2("../Files/vehicle" + to_string(vehicle->getID()) + "Return.txt");
+	vector<VehiclePathVertex> path = vehicle->getPath();
+	vector<VehiclePathVertex> returnPath = vehicle->getReturnPath();
+	f1 << "Path" << endl;
+	f1 << "Start at ID: " << path[0].vertex->getID() << endl;
+	for (int i = 1; i < path.size(); i++) {
+		double x1 = path[i - 1].vertex->getX();
+		double y1 = path[i - 1].vertex->getY();
+
+		double x2 = path[i].vertex->getX();
+		double y2 = path[i].vertex->getY();
+
+		double angle = atan2(y2 - y1, x2 - x1);
+		angle += 3.14159265358979323846;
+		angle /= 3.14159265358979323846 / 4;
+		int halfQuarter = (int)angle;
+		Direction dir = (Direction)(halfQuarter % 8);
+
+		double dist = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+
+		switch (dir) {
+		case North: f1 << "Go North "; break;
+		case South: f1 << "Go South "; break;
+		case East: f1 << "Go East "; break;
+		case West: f1 << "Go West "; break;
+		case Northeast: f1 << "Go Northeast "; break;
+		case Northwest: f1 << "Go Northwest "; break;
+		case Southeast: f1 << "Go Southeast "; break;
+		case Southwest: f1 << "Go Southwest "; break;
+		}
+
+		f1 << dist << " meters, to " << path[i].vertex->getID() << endl;
+	}
+
+	f1 << "End at ID: " << path[path.size() - 1].vertex->getID() << endl;
+
+	f2 << "Return Path" << endl;
+	f2 << "Start at ID: " << path[0].vertex->getID() << endl;
+	for (int i = 1; i < path.size(); i++) {
+		double x1 = path[i - 1].vertex->getX();
+		double y1 = path[i - 1].vertex->getY();
+
+		double x2 = path[i].vertex->getX();
+		double y2 = path[i].vertex->getY();
+
+		double angle = atan2(y2 - y1, x2 - x1);
+		angle += 3.14159265358979323846;
+		angle /= 3.14159265358979323846 / 4;
+		int halfQuarter = (int)angle;
+		Direction dir = (Direction)(halfQuarter % 8);
+
+		double dist = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+
+		switch (dir) {
+		case North: f2 << "Go North "; break;
+		case South: f2 << "Go South "; break;
+		case East: f2 << "Go East "; break;
+		case West: f2 << "Go West "; break;
+		case Northeast: f2 << "Go Northeast "; break;
+		case Northwest: f2 << "Go Northwest "; break;
+		case Southeast: f2 << "Go Southeast "; break;
+		case Southwest: f2 << "Go Southwest "; break;
+		}
+
+		f2 << dist << " meters, to " << path[i].vertex->getID() << endl;
+	}
+
+	f2 << "End at ID: " << path[path.size() - 1].vertex->getID() << endl;
+}
 void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix, vector<Vehicle*> vehicles) {
 	VehiclePathCalculator* calc = new VehiclePathCalculator(poiList.getChildren(), poiList, matrix);
 	calc->calculate(vehicles);
 
 	for (Vehicle* vehicle : vehicles) {
+		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()), '-');
 		Menu::printHeader("Path to school");
 		displayVehiclePath(gv, poiList, vehicle->getPath());
 
@@ -284,6 +368,8 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 		cout << endl;
 		system("pause");
 		resetGraphColors(gv, graph->getVertexSet(), poiList);
+
+		logVehiclePath(vehicle);
 	}
 }
 
@@ -376,13 +462,12 @@ int main() {
 		cout << " 2 - Add vehicle" << endl;
 		cout << " 3 - Add kid" << endl;
 		cout << " 4 - Set garage point" << endl;
-		cout << " 5 - Verify connectivity " << endl;
+		cout << " 5 - Verify connectivity between PoIs" << endl;
 		cout << " 6 - Verify graph strong connectivity" << endl;
 		cout << " 7 - Update Graph Viewer PoIs" << endl;
-		cout << " 8 - Test feature" << endl;
-		cout << " 9 - Toggle node IDs" << endl;
-		cout << " 10 - Verify Articulation Points" << endl;
-		cout << " 11 - Test feature 2" << endl;
+		cout << " 8 - Toggle node IDs" << endl;
+		cout << " 9 - Verify Articulation Points" << endl;
+		cout << " 10 - Calculate Path" << endl;
 		cout << " 0 - Save and quit" << endl;
 		Menu::getInput<int>("Option: ", option, 0, 11);
 
@@ -394,10 +479,9 @@ int main() {
 			case 5: verifyConnectivity(poiList.getIDs(), matrix); break;
 			case 6:	verifyStronglyConnected(graph); break;
 			case 7: resetGraphColors(gv, graph->getVertexSet(), poiList); break;
-			case 8: showPoIsOnly(poiList, matrix); break;
-			case 9: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
-			case 10: articulationPoints(gv, graph, poiList.getIDs()); break;
-			case 11: pathCalculator(gv, graph, poiList, matrix, vehicles); break;
+			case 8: toggleNodeIDs(gv, graph, poiList.getIDs()); break;
+			case 9: articulationPoints(gv, graph, poiList.getIDs()); break;
+			case 10: pathCalculator(gv, graph, poiList, matrix, vehicles); break;
 			case 0: poiList.save("../Files/pois.txt"); saveVehicles(vehicles); return 0;
 
 		}

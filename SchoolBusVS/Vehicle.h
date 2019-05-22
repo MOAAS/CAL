@@ -17,6 +17,8 @@ struct VehiclePathVertex {
 
 class Vehicle
 {
+	static int NUM_VEHICLES;
+	int id;
 	size_t capacity;
 	vector<Child*> children;
 	vector<VehiclePathVertex> path;
@@ -27,6 +29,7 @@ public:
 	vector<Child*> getChildren() const;
 	vector<VehiclePathVertex> getPath() const;
 	vector<VehiclePathVertex> getReturnPath() const;
+	int getID() const;
 
 	void assignPath(const vector<VehiclePathVertex>& path, const vector<VehiclePathVertex>& returnPath);
 };
