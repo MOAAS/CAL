@@ -7,6 +7,7 @@
 
 using namespace std;
 
+
 struct VehiclePathVertex {
 	VehiclePathVertex(Vertex* vertex) : vertex(vertex) { this->isPoI = false; }
 	VehiclePathVertex(Vertex* vertex, POI::POItype type) : vertex(vertex), type(type) { this->isPoI = true; }
@@ -30,6 +31,8 @@ public:
 	vector<VehiclePathVertex> getPath() const;
 	vector<VehiclePathVertex> getReturnPath() const;
 	int getID() const;
+	double getPathDist() const;
+	double getReturnDist() const;
 
 	void assignPath(const vector<VehiclePathVertex>& path, const vector<VehiclePathVertex>& returnPath);
 };

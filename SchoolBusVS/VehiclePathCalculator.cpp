@@ -124,7 +124,7 @@ void VehiclePathCalculator::assignKids(vector<Child*>& kidsLeft, Vehicle* vehicl
 	vector<POI> path;
 	path.push_back(POI(garage, POI::Garage));
 
-	for (int i = 0; i < (int)kidsLeft.size() && i < vehicle->getCapacity(); i++) {
+	for (size_t i = 0; i < kidsLeft.size() && i < vehicle->getCapacity(); i++) {
 		assignKidGo(kidsLeft[i], path, matrix);
 		assignSchoolGo(kidsLeft[i]->getSchool(), path, matrix);
 	}
@@ -134,7 +134,7 @@ void VehiclePathCalculator::assignKids(vector<Child*>& kidsLeft, Vehicle* vehicl
 	returnPath.push_back(path[path.size() - 1]);
 	returnPath.push_back(POI(garage, POI::Garage));
 
-	for (int i = 0; i < (int)kidsLeft.size() && i < vehicle->getCapacity(); i++) {
+	for (size_t i = 0; i < kidsLeft.size() && i < vehicle->getCapacity(); i++) {
 		assignSchoolReturn(kidsLeft[i]->getSchool(), returnPath, matrix);
 		assignKidReturn(kidsLeft[i], returnPath, matrix);
 	}

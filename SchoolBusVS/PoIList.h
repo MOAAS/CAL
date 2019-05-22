@@ -45,6 +45,6 @@ public:
 	void addHome(Child* child);
 	vector<int> getIDs() const;
 	vector<POI> getPoIs() const;
-	vector<Vertex*> getVertexes() const;
+	vector<Vertex*> getVertices() const;
 };
 
