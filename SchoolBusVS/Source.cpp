@@ -5,6 +5,8 @@
 #include "VehiclePathCalculator.h"
 
 #include <iostream>
+#include <chrono>
+
 #include "PoIList.h"
 #include "graphviewer.h"
 
@@ -241,6 +243,56 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 	return graph;
 }
 
+vector<Vehicle*> getUsedVehicles(int kidsLeft, vector<Vehicle*> vehicles) {
+	vector<Vehicle*> v;
+	vector<Vehicle*>::iterator it = vehicles.begin();
+
+	while (kidsLeft > 0 && vehicles.size() != 0) {
+		if (kidsLeft >= (*it)->getCapacity()) {
+			kidsLeft -= (*it)->getCapacity();
+			v.push_back(*it);
+			vehicles.erase(it);
+			it = vehicles.begin();
+		}
+		else {
+			it++;
+			if (it == vehicles.end() || kidsLeft > (*it)->getCapacity()) {
+				it--;
+				kidsLeft -= (*it)->getCapacity();
+				v.push_back(*it);
+				vehicles.erase(it);
+			}
+		}
+	}
+
+	return v;
+}
+
+vector<Child *> orderKidsMST(vector<POI> poiList, PathMatrix* matrix) {
+	vector<Child *> orderedKids;
+	vector<POI>::iterator it;
+	for (it = poiList.begin(); it != poiList.end(); it++) {
+		if (it->getType() == POI::School) {
+			poiList.erase(it);
+			it--;
+		}
+	}
+	Graph* graph = makeGraphFromPoIs(poiList, matrix);
+	vector<Vertex*> route = graph->calculatePrim();
+
+	for (size_t i = 0; i < route.size(); i++) {
+		for (it = poiList.begin(); it != poiList.end(); it++)
+			if (route.at(i)->getID() == it->getID()) {
+				if (it->getType() == POI::Kid)
+					orderedKids.push_back(it->getChild());
+				break;
+			}
+	}
+
+	return orderedKids;
+}
+
+
 void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehiclePathVertex>& path, double dist) {
 	for (VehiclePathVertex v : path) {
 		if (!v.isPoI) {
@@ -299,6 +351,7 @@ void logVehiclePath(ofstream& file, const vector<VehiclePathVertex>& path, strin
 	file << "Total distance: " << totalDist << " meters." << endl;
 }
 
+
 void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix, vector<Vehicle*> vehicles) {
 	Menu::printHeader("Route Calculator");
 
@@ -310,11 +363,8 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 		return;
 	}
 
-	VehiclePathCalculator* calc = new VehiclePathCalculator(poiList.getChildren(), poiList, matrix);
-	calc->calculate(vehicles);
-
-	int numChildren = poiList.getChildren().size();
-	int totalCapacity = 0;
+	size_t numChildren = poiList.getChildren().size();
+	size_t totalCapacity = 0;
 	for (Vehicle* vehicle : vehicles)
 		totalCapacity += vehicle->getCapacity();
 	
@@ -323,7 +373,23 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 		Menu::displayColored(to_string(numChildren) + " Kids VS " + to_string(totalCapacity) + " bus slots!", MENU_LIGHTRED) << endl;
 		return;
 	}
+
+
 	
+	// Algoritmo MST
+	auto start = chrono::steady_clock::now();
+	vector<Child*> orderedKids = orderKidsMST(poiList.getPoIs(), matrix);
+
+	// Algoritmo Greedy
+	vector<Vehicle*> usedVehicles = getUsedVehicles(orderedKids.size(), vehicles);
+
+	// Algoritmo Nearest Insertion
+	VehiclePathCalculator* calc = new VehiclePathCalculator(orderedKids, poiList, matrix);
+	calc->calculate(usedVehicles);
+
+	auto end = chrono::steady_clock::now();
+	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << endl;
+	system("pause");
 	for (Vehicle* vehicle : vehicles) {
 		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()), '-');
 		double distPath = vehicle->getPathDist();
@@ -357,74 +423,6 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 	}
 }
 
-
-
-vector<Child *> orderKids(vector<POI> poiList, PathMatrix* matrix) {
-	vector<Child *> orderedKids;
-	vector<POI>::iterator it;
-	for (it = poiList.begin(); it != poiList.end(); it++) {
-		if (it->getType() == POI::School) {
-			poiList.erase(it);
-			it--;
-		}
-	}
-	Graph* graph = makeGraphFromPoIs(poiList, matrix);
-	vector<Vertex*> route = graph->calculatePrim();
-
-	for (size_t i = 0; i < route.size(); i++) {
-		for (it = poiList.begin(); it != poiList.end(); it++)
-			if (route.at(i)->getID() == it->getID()) {
-				if (it->getType() == POI::Kid)
-					orderedKids.push_back(it->getChild());
-				poiList.erase(it);
-				break;
-			}
-	}
-
-	return orderedKids;
-}
-
-// 
-vector<Vehicle*> vehicles(int kidsLeft, vector<Vehicle*> vehicles) {
-	vector<Vehicle*> v;
-	vector<Vehicle*>::iterator it = vehicles.begin();
-
-	while (kidsLeft > 0 && vehicles.size() != 0) {
-		if (kidsLeft >= (*it)->getCapacity()) {
-			kidsLeft -= (*it)->getCapacity();
-			v.push_back(*it);
-			vehicles.erase(it);
-			it = vehicles.begin();
-		}
-		else {
-			it++;
-			if (it == vehicles.end() || kidsLeft > (*it)->getCapacity()) {
-				it--;
-				kidsLeft -= (*it)->getCapacity();
-				v.push_back(*it);
-				vehicles.erase(it);
-			}
-		}
-	}
-
-	return v;
-}
-
-
-
-void showPoIsOnly(const PoIList& poiList, PathMatrix* matrix) {
-	Menu::printHeader("Test feature");
-	Graph* graph = makeGraphFromPoIs(poiList.getPoIs(), matrix);
-	GraphViewer* gv = createGraphViewer(graph, true);
-	highlightPoIs(gv, poiList);
-
-	system("pause");
-
-
-	destroyGraphViewer(gv);
-}
-
-
 /******************************\
 |********* LOAD / SAVE ********|
 \******************************/
@@ -457,7 +455,11 @@ int main() {
 	PoIList poiList("../Files/pois.txt", graph);
 
 	cout << "Pre-processing..." << endl;
+	//auto start = chrono::steady_clock::now();
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
+
+	//auto end = chrono::steady_clock::now();	
+	//cout << chrono::duration_cast<chrono::milliseconds>(end - start).count()  << endl;
 	
 	cout << "Opening Graph Viewer..." << endl;
 	GraphViewer *gv = createGraphViewer(graph, false);
