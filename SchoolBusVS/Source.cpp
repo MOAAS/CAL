@@ -7,6 +7,7 @@
 #include <iostream>
 #include "PoIList.h"
 #include "graphviewer.h"
+#include <string>
 
 using namespace std;
 
@@ -204,7 +205,10 @@ void articulationPoints(GraphViewer* gv, Graph* graph, const PoIList poiList) {
 	Menu::printHeader("Articulation Points");
 	vector<Vertex *> articulationPoints = graph->articulationPoints(poiList.getIDs());
 	if (articulationPoints.size() > 0) {
-		Menu::displayColored("There are articulation Points between PoIs", MENU_LIGHTRED) << endl;
+		string s = "There are ";
+		s += to_string(articulationPoints.size());
+		s += " articulation Points between PoIs";
+		Menu::displayColored(s, MENU_LIGHTRED) << endl;
 		for (Vertex * v : articulationPoints)
 			gv->setVertexColor(v->getID(), ORANGE);
 	}
