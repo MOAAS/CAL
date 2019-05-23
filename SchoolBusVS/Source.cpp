@@ -5,7 +5,6 @@
 #include "VehiclePathCalculator.h"
 
 #include <iostream>
-#include <chrono>
 
 #include "PoIList.h"
 #include "graphviewer.h"
