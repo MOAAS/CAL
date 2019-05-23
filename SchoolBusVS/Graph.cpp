@@ -102,8 +102,6 @@ bool Graph::addEdge(int edgeID, int srcID, int destID, double w) {
 	Vertex* v2 = findVertex(destID);
 	if (v1 == NULL || v2 == NULL)
 		return false;
-	if (findEdge(edgeID) != NULL)
-		return false;
 	v1->addEdge(edgeID, v2, w);
 	return true;
 }

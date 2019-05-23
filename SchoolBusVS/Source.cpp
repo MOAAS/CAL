@@ -459,11 +459,11 @@ int main() {
 	PoIList poiList("../Files/pois.txt", graph);
 
 	cout << "Pre-processing..." << endl;
-	//auto start = chrono::steady_clock::now();
+	auto start = chrono::steady_clock::now();
 	PathMatrix* matrix = graph->multipleDijkstra(poiList.getIDs());
 
-	//auto end = chrono::steady_clock::now();	
-	//cout << chrono::duration_cast<chrono::milliseconds>(end - start).count()  << endl;
+	auto end = chrono::steady_clock::now();	
+	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count()  << endl;
 	
 	cout << "Opening Graph Viewer..." << endl;
 	GraphViewer *gv = createGraphViewer(graph, false);
