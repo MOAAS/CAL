@@ -380,7 +380,6 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 
 	
 	// Algoritmo MST
-	auto start = chrono::steady_clock::now();
 	vector<Child*> orderedKids = orderKidsMST(poiList.getPoIs(), matrix);
 
 	// Algoritmo Greedy
@@ -390,9 +389,6 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 	VehiclePathCalculator* calc = new VehiclePathCalculator(orderedKids, poiList, matrix);
 	calc->calculate(usedVehicles);
 
-	auto end = chrono::steady_clock::now();
-	cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << endl;
-	system("pause");
 	for (Vehicle* vehicle : vehicles) {
 		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()), '-');
 		double distPath = vehicle->getPathDist();
