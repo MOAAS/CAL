@@ -248,6 +248,9 @@ Graph* makeGraphFromPoIs(const vector<POI>& poiList, PathMatrix* matrix) {
 
 vector<Vehicle*> getUsedVehicles(int kidsLeft, vector<Vehicle*> vehicles) {
 	vector<Vehicle*> v;
+	
+	sortPointerVector(vehicles);
+	
 	vector<Vehicle*>::iterator it = vehicles.begin();
 
 	while (kidsLeft > 0 && vehicles.size() != 0) {
@@ -466,7 +469,6 @@ int main() {
 
 	cout << "Loading vehicles..." << endl;
 	vector<Vehicle*> vehicles = loadVehicles();
-	
 
 	while (true) {
 		int option;

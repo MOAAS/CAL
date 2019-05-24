@@ -35,5 +35,6 @@ public:
 	double getReturnDist() const;
 
 	void assignPath(const vector<VehiclePathVertex>& path, const vector<VehiclePathVertex>& returnPath);
+	bool operator<(const Vehicle &right) const;
 };
 

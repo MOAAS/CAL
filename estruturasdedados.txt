@@ -1,0 +1,20 @@
+Na solução implementada foram utilizadas várias estruturas de dados que facilitaram o desenvolvimento dos diferentes elementos do programa.
+Ao longo do desenvolvimento do projeto foram utilizadas várias estruturas de dados que facilitaram a elaboração dos diferentes elementos da solução.
+Deste modo, estão presentes nos vários componentes as seguintes estruturas de dados:
+- Vector
+- Priority Queue
+- Queue?? Em lista...
+- Unordered Map
+
+No que diz respeito a vetores, estes foram utilizados numa grade parte dos objetos concebidos devido à facilidade de uso e a todas as vantagens que traz. 
+Vetores (Container vector) simplificam a inserção e remoção de elementos, permitem acesso fácil ao número de elementos inseridos e aos próprios elementos, não só com iteradores, mas também a partir de índices.
+Deste modo, atendendo a que todas estas valências são bastante úteis, vetores foram preferidos a estruturas de dados como arrays e listas.
+No entanto, visto não haver necessidade de acesso a partir de índices, na implementação do algoritmo de Breadth First Search (BFS) que opera sobre um grafo foi utilizada uma lista com vista a simular uma fila, mas que permitisse acesso aos elementos interiores.
+
+Quanto a filas, foram utilizadas filas de prioridade, estrutura necessária para a conceção de algoritmos como o Algoritmo de Djikstra e o Algoritmo de Prim. 
+/**/
+Contudo, ao contrário do que aconteceu com as restantes estruturas de dados, foi usada a implementação de uma fila de prioridade mutável disponibilizada para as aulas em detrimento do container priority queue da linguagem de C++.
+
+Por fim, foram utilizados unordered maps pois, relativamente a todas as outras estruturas de dados, simplificam o modo de armazenamento tanto do caminho como da distância entre cada par de vértices. 
+/**/
+Posto isto, esta estrutura de dados é essencial para que seja possível apresentar o caminho a percorrer pelos veículos de transporte.
