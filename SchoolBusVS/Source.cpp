@@ -250,6 +250,7 @@ vector<Vehicle*> getUsedVehicles(int kidsLeft, vector<Vehicle*> vehicles) {
 	vector<Vehicle*> v;
 	
 	sortPointerVector(vehicles);
+	reverse(vehicles.begin(), vehicles.end());
 	
 	vector<Vehicle*>::iterator it = vehicles.begin();
 
@@ -271,6 +272,9 @@ vector<Vehicle*> getUsedVehicles(int kidsLeft, vector<Vehicle*> vehicles) {
 		}
 	}
 
+	for (Vehicle* vi : v) {
+		cout << vi->getCapacity() << endl;
+	}
 	return v;
 }
 
@@ -299,7 +303,7 @@ vector<Child *> orderKidsMST(vector<POI> poiList, PathMatrix* matrix) {
 }
 
 
-void displayVehiclePath(GraphViewer* gv, PoIList& poiList, const vector<VehiclePathVertex>& path, double dist) {
+void displayVehiclePath(GraphViewer* gv, const PoIList& poiList, const vector<VehiclePathVertex>& path, double dist) {
 	for (VehiclePathVertex v : path) {
 		if (!v.isPoI) {
 			Menu::displayColored(to_string(v.vertex->getID()) + " ", MENU_CYAN);
@@ -358,7 +362,7 @@ void logVehiclePath(ofstream& file, const vector<VehiclePathVertex>& path, strin
 }
 
 
-void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix* matrix, vector<Vehicle*> vehicles) {
+void pathCalculator(GraphViewer* gv, Graph* graph, const PoIList& poiList, PathMatrix* matrix, const vector<Vehicle*>& vehicles) {
 	Menu::printHeader("Route Calculator");
 
 	int missingPaths = matrix->getNumMissingPaths(poiList.getIDs(), false);
@@ -392,8 +396,8 @@ void pathCalculator(GraphViewer* gv, Graph* graph, PoIList& poiList, PathMatrix*
 	VehiclePathCalculator* calc = new VehiclePathCalculator(orderedKids, poiList, matrix);
 	calc->calculate(usedVehicles);
 
-	for (Vehicle* vehicle : vehicles) {
-		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()), '-');
+	for (Vehicle* vehicle : usedVehicles) {
+		Menu::printTitle("Vehicle ID: " + to_string(vehicle->getID()) + " (Capacity: " + to_string(vehicle->getCapacity()) + ")", '-');
 		double distPath = vehicle->getPathDist();
 		double distReturn = vehicle->getReturnDist();
 		// Path

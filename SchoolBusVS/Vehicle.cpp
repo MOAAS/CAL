@@ -64,7 +64,7 @@ void Vehicle::assignPath(const vector<VehiclePathVertex>& path, const vector<Veh
 }
 
 bool Vehicle::operator<(const Vehicle &v) const {
-	return this->getCapacity() > v.getCapacity(); 
+	return this->getCapacity() < v.getCapacity(); 
 }
 
 int Vehicle::NUM_VEHICLES = 0;

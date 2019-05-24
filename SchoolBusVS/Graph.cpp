@@ -274,10 +274,13 @@ vector<Vertex*> Graph::calculatePrim() {
 	MutablePriorityQueue<Vertex> q;
 	q.insert(s);
 
+	vector<Vertex*> order;
+
 	// process vertices in the priority queue
 	while (!q.empty()) {
 		Vertex* v = q.extractMin();
 		v->visited = true;
+		order.push_back(v);
 		for (Edge* e : v->adj) {
 			Vertex* w = e->dest;
 			if (!w->visited) {
@@ -292,7 +295,7 @@ vector<Vertex*> Graph::calculatePrim() {
 			}
 		}
 	}
-	return this->vertexSet; 
+	return order;
 }
 
 
