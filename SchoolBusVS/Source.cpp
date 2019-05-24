@@ -272,9 +272,6 @@ vector<Vehicle*> getUsedVehicles(int kidsLeft, vector<Vehicle*> vehicles) {
 		}
 	}
 
-	for (Vehicle* vi : v) {
-		cout << vi->getCapacity() << endl;
-	}
 	return v;
 }
 
