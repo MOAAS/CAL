@@ -45,7 +45,7 @@ void VehiclePathCalculator::assignKidGo(Child* child, vector<POI>& path, PathMat
 	}
 
 	if (matrix->getDist(path[path.size() - 1].getID(), homeID) < distIncrease)
-		assignedSpot = path.size();
+		assignedSpot = (int)path.size();
 
 	path.insert(path.begin() + assignedSpot, POI(child));
 }
@@ -56,10 +56,10 @@ void VehiclePathCalculator::assignSchoolGo(Vertex* school, vector<POI>& path, Pa
 			return;
 
 	int schoolID = school->getID();
-	size_t assignedSpot = path.size();
+	int assignedSpot = (int)path.size();
 	double distIncrease = getDistIncrease(matrix, path, assignedSpot, schoolID);
 
-	for (int i = path.size() - 1; i >= 1; i--) {
+	for (int i = (int)path.size() - 1; i >= 1; i--) {
 		if (path[i].getType() == POI::Kid && path[i].getChild()->getSchool() == school)
 			break;
 		double newDistIncrease = getDistIncrease(matrix, path, i, schoolID);

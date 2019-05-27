@@ -204,10 +204,7 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 
 void articulationPoints(GraphViewer* gv, Graph* graph, const PoIList poiList) {
 	Menu::printHeader("Articulation Points");
-	auto s = timeMeasuring::now();
 	vector<Vertex *> articulationPoints = graph->articulationPoints(poiList.getVertices());
-	auto e = timeMeasuring::now();
-	timeMeasuring::printDiff(s, e);
 	if (articulationPoints.size() > 0) {
 		string s = "There are ";
 		s += to_string(articulationPoints.size());
@@ -390,7 +387,7 @@ void pathCalculator(GraphViewer* gv, Graph* graph, const PoIList& poiList, PathM
 	vector<Child*> orderedKids = orderKidsMST(poiList.getPoIs(), matrix);
 
 	// Algoritmo Greedy
-	vector<Vehicle*> usedVehicles = getUsedVehicles(orderedKids.size(), vehicles);
+	vector<Vehicle*> usedVehicles = getUsedVehicles((int)orderedKids.size(), vehicles);
 
 	// Algoritmo Nearest Insertion
 	VehiclePathCalculator* calc = new VehiclePathCalculator(orderedKids, poiList, matrix);
