@@ -89,8 +89,8 @@ public:
 
 	vector<Vertex*> calculatePrim();
 	bool stronglyConnected();
-	bool verifyConnectivity(const vector<int>& POIids, Vertex* removed);
-	vector<Vertex *> articulationPoints(const vector<int>& POIids);
+	bool verifyConnectivity(const vector<Vertex*>& POIids, Vertex* removed);
+	vector<Vertex *> articulationPoints(const vector<Vertex*>& POIids);
 
 };
 

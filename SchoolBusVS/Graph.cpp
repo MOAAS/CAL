@@ -319,25 +319,25 @@ bool Graph::stronglyConnected() {
 
 /***** Connected between points of interest (ignoring a vertex) ****/
 
-bool Graph::verifyConnectivity(const vector<int>& POIids,Vertex* removed) {
-	for (int id : POIids)
-		if (id == removed->getID())
+bool Graph::verifyConnectivity(const vector<Vertex*>& POIs, Vertex* removed) {
+	for (Vertex* v : POIs)
+		if (v->getID() == removed->getID())
 			return true;
-	BFS(findVertex(POIids[0]),removed);
-	for (int id : POIids) {
-		if (findVertex(id)->visited == false)
+	BFS(POIs[0], removed);
+	for (Vertex* v : POIs) {
+		if (v->visited == false)
 			return false;
 	}
 	return true;
 }
 
 /***** Articulation Points (between PoI) ****/
-vector<Vertex *> Graph::articulationPoints(const vector<int>& POIids) {
+vector<Vertex *> Graph::articulationPoints(const vector<Vertex*>& POIs) {
 	vector<Vertex *> articulationPoints;
-	if (POIids.size() == 0)
+	if (POIs.size() == 0)
 		return articulationPoints;
 	for (auto v : vertexSet){
-		if (!verifyConnectivity(POIids, v))
+		if (!verifyConnectivity(POIs, v))
 			articulationPoints.push_back(v);
 	}
 	return articulationPoints;

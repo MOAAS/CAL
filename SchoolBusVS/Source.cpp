@@ -204,7 +204,10 @@ void verifyConnectivity(const vector<int>& ids, PathMatrix* matrix) {
 
 void articulationPoints(GraphViewer* gv, Graph* graph, const PoIList poiList) {
 	Menu::printHeader("Articulation Points");
-	vector<Vertex *> articulationPoints = graph->articulationPoints(poiList.getIDs());
+	auto s = timeMeasuring::now();
+	vector<Vertex *> articulationPoints = graph->articulationPoints(poiList.getVertices());
+	auto e = timeMeasuring::now();
+	timeMeasuring::printDiff(s, e);
 	if (articulationPoints.size() > 0) {
 		string s = "There are ";
 		s += to_string(articulationPoints.size());
