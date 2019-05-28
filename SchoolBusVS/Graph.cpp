@@ -117,21 +117,21 @@ void Graph::BFS(Vertex* s)
 	}
 
 	// Create a queue for BFS 
-	list<Vertex*> queue;
+	queue<Vertex*> q;
 
 	// Mark the current node as visited and enqueue it 
 	s->visited = true;
-	queue.push_back(s);
+	q.push(s);
 
 	// 'i' will be used to get all adjacent 
 	// vertices of a vertex 
 	list<int>::iterator i;
 
-	while (!queue.empty())
+	while (!q.empty())
 	{
 		// Dequeue a vertex from queue
-		s = queue.front();
-		queue.pop_front();
+		s = q.front();
+		q.pop();
 
 		// Get all adjacent vertices of the dequeued 
 		// vertex s. If a adjacent has not been visited,  
@@ -142,7 +142,7 @@ void Graph::BFS(Vertex* s)
 			if (!(edge->dest->visited))
 			{
 				edge->dest->visited = true;
-				queue.push_back(edge->dest);
+				q.push(edge->dest);
 			}
 		}
 	}
@@ -158,17 +158,17 @@ void Graph::BFS(Vertex* s, Vertex* removed)
 	}
 
 	// Create a queue for BFS 
-	list<Vertex*> queue;
+	queue<Vertex*> q;
 
 	// Mark the current node as visited and enqueue it 
 	s->visited = true;
-	queue.push_back(s);
+	q.push(s);
 
-	while (!queue.empty())
+	while (!q.empty())
 	{
 		// Dequeue a vertex from queue
-		s = queue.front();
-		queue.pop_front();
+		s = q.front();
+		q.pop();
 
 		// Get all adjacent vertices of the dequeued 
 		// vertex s. If a adjacent has not been visited,  
@@ -179,7 +179,7 @@ void Graph::BFS(Vertex* s, Vertex* removed)
 			if (!(edge->dest->visited) && edge->dest != removed) //!
 			{
 				edge->dest->visited = true;
-				queue.push_back(edge->dest);
+				q.push(edge->dest);
 			}
 		}
 	}
